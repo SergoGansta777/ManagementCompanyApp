@@ -70,3 +70,8 @@ pub struct Incident {
     pub description: Option<String>,
     pub incident_type_id: Uuid,
 }
+
+#[derive(Serialize)]
+pub struct IncidentTypeList {
+    pub incident_types: Vec<IncidentType>,
+}

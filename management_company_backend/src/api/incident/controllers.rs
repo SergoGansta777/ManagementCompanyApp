@@ -5,7 +5,8 @@ use uuid::Uuid;
 use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
 
 use super::models::{
-    Address, Building, Incident, IncidentDetails, IncidentList, IncidentType, NewIncident,
+    Address, Building, Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList,
+    NewIncident,
 };
 
 pub async fn get_all_incidents(
@@ -72,6 +73,7 @@ pub async fn get_all_incidents(
 }
 
 pub async fn add_incident(
+    _: AuthUser,
     State(ctx): State<ApiContext>,
     Json(new_incident): Json<NewIncident>,
 ) -> Result<Json<Incident>, Error> {
@@ -92,4 +94,23 @@ pub async fn add_incident(
     .await?;
 
     Ok(Json(incident))
+}
+
+pub async fn get_all_incident_types(
+    _: AuthUser,
+    State(ctx): State<ApiContext>,
+) -> Result<Json<IncidentTypeList>, Error> {
+    let db_incident_types = sqlx::query_as!(
+        IncidentType,
+        r#"
+        SELECT id, name
+        FROM incident_type
+        "#
+    )
+    .fetch_all(&ctx.db)
+    .await?;
+
+    Ok(Json(IncidentTypeList {
+        incident_types: db_incident_types,
+    }))
 }
