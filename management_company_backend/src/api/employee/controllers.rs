@@ -2,7 +2,7 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use sqlx::query;
+use sqlx::{query, Postgres, Transaction};
 use uuid::Uuid;
 
 use crate::api::{extractor::AuthUser, ApiContext, Error};
@@ -185,19 +185,35 @@ pub async fn delete_employee(
     ctx: State<ApiContext>,
     Path(id): Path<Uuid>,
 ) -> Result<(), Error> {
-    let rows_affected = query!(
+    let mut transaction = ctx.db.begin().await?;
+
+    let rows_affected_committee = query!(
+        r#"
+        DELETE FROM committee_employee
+        WHERE employee_id = $1
+        "#,
+        id
+    )
+    .execute(&mut *transaction)
+    .await?
+    .rows_affected();
+
+    let rows_affected_employee = query!(
         r#"
         DELETE FROM employee
         WHERE id = $1
         "#,
         id
     )
-    .execute(&ctx.db)
+    .execute(&mut *transaction)
     .await?
     .rows_affected();
 
-    if rows_affected == 0 {
+    if rows_affected_committee == 0 && rows_affected_employee == 0 {
+        transaction.rollback().await?;
         return Err(Error::EmployeeNotFound);
+    } else {
+        transaction.commit().await?;
     }
 
     Ok(())

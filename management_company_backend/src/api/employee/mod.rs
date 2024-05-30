@@ -1,5 +1,5 @@
 use crate::api::ApiContext;
-use axum::routing::{get, post, put};
+use axum::routing::{get, post};
 use axum::Router;
 use controllers::{
     add_employee, delete_employee, get_all_employees, get_employee, update_employee,
