@@ -7,10 +7,12 @@ use controllers::{
 
 mod controllers;
 mod models;
+mod position;
 mod utils;
 
 pub(crate) fn router() -> Router<ApiContext> {
     Router::new()
+        .merge(position::router())
         .route("/api/employees", post(add_employee).get(get_all_employees))
         .route(
             "/api/employee/:id",
