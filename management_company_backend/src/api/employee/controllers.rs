@@ -2,7 +2,7 @@ use axum::{
     extract::{Path, State},
     Json,
 };
-use sqlx::{query, Postgres, Transaction};
+use sqlx::query;
 use uuid::Uuid;
 
 use crate::api::{extractor::AuthUser, ApiContext, Error};
