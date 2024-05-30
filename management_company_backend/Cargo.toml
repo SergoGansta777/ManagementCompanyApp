@@ -1,0 +1,39 @@
+[package]
+name = "management_company_backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.83"
+argon2 = "0.5.3"
+axum = { version = "0.7.5", features = ["tower-log"] }
+clap = { version = "4.5.4", features = ["derive", "env"] }
+dotenv = "0.15.0"
+env_logger = "0.11.3"
+hmac = "0.12.1"
+jwt = "0.16.0"
+log = "0.4.21"
+rand = "0.8.5"
+serde = { version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.117"
+sha2 = "0.10.8"
+sqlx = { version = "0.7.4", features = [
+  "postgres",
+  "macros",
+  "runtime-tokio-native-tls",
+  "uuid",
+  "time",
+] }
+thiserror = "1.0.60"
+time = "0.3.36"
+tokio = { version = "1.37.0", features = ["full"] }
+tower = "0.4.13"
+tower-http = { version = "0.5.2", features = [
+  "catch-panic",
+  "compression-full",
+  "sensitive-headers",
+  "timeout",
+  "trace",
+  "cors",
+] }
+uuid = { version = "1.8.0", features = ["serde"] }
