@@ -22,6 +22,7 @@ pub use error::Error;
 mod employee;
 mod error;
 mod extractor;
+mod incident;
 mod user;
 
 use crate::config::Config;
@@ -42,7 +43,6 @@ pub async fn serve(config: Config, db: PgPool) -> anyhow::Result<()> {
 
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 8080));
     let listener = TcpListener::bind(addr).await?;
-    println!("Running");
     axum::serve(listener, app)
         .await
         .context("error running HTTP server")
@@ -54,6 +54,7 @@ fn api_router(api_context: ApiContext) -> Router {
     Router::new()
         .merge(user::router())
         .merge(employee::router())
+        .merge(incident::router())
         .route("/health", axum::routing::get(|| async { "healthy" }))
         .layer((
             SetSensitiveHeadersLayer::new([AUTHORIZATION]),
