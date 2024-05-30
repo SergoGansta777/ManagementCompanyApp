@@ -25,6 +25,9 @@ pub enum Error {
 
     #[error("An internal server error occurred")]
     Anyhow(#[from] anyhow::Error),
+
+    #[error("Position ID does not exist")]
+    PositionNotFound,
 }
 
 impl Default for Error {
@@ -37,7 +40,9 @@ impl Error {
     fn status_code(&self) -> StatusCode {
         match self {
             Self::Unauthorized | Self::UserNotFound => StatusCode::UNAUTHORIZED,
-            Self::NotFound | Self::EmployeeNotFound => StatusCode::NOT_FOUND,
+            Self::NotFound | Self::EmployeeNotFound | Self::PositionNotFound => {
+                StatusCode::NOT_FOUND
+            }
             Self::Sqlx(_) | Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
             _ => StatusCode::FORBIDDEN,
         }

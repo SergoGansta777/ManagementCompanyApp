@@ -19,6 +19,7 @@ use tower_http::{
 
 pub use error::Error;
 
+mod employee;
 mod error;
 mod extractor;
 mod user;
@@ -52,6 +53,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 fn api_router(api_context: ApiContext) -> Router {
     Router::new()
         .merge(user::router())
+        .merge(employee::router())
         .route("/health", axum::routing::get(|| async { "healthy" }))
         .layer((
             SetSensitiveHeadersLayer::new([AUTHORIZATION]),
