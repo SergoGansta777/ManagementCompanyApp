@@ -60,3 +60,17 @@ pub async fn insert_employee(
 
     Ok(employee_id)
 }
+
+pub async fn employee_exists(pool: &PgPool, employee_id: Uuid) -> Result<bool, Error> {
+    let exists: Option<bool> = query_scalar!(
+        r#"
+        SELECT EXISTS(SELECT 1 FROM employee WHERE id = $1)
+        "#,
+        employee_id
+    )
+    .fetch_optional(pool)
+    .await?
+    .unwrap_or(None);
+
+    Ok(exists.unwrap_or(false))
+}

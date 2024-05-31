@@ -8,7 +8,7 @@ use controllers::{
 mod controllers;
 mod models;
 mod position;
-mod utils;
+pub mod utils;
 
 pub(crate) fn router() -> Router<ApiContext> {
     Router::new()

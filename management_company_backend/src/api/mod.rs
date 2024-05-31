@@ -23,6 +23,7 @@ mod building;
 mod employee;
 mod error;
 mod extractor;
+mod financial_operation;
 mod incident;
 mod repair;
 mod user;
