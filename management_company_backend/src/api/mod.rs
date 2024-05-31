@@ -14,7 +14,7 @@ use tower_http::{
     cors::{Any, CorsLayer},
     sensitive_headers::SetSensitiveHeadersLayer,
     timeout::TimeoutLayer,
-    trace::TraceLayer,
+    trace::{DefaultMakeSpan, DefaultOnFailure, DefaultOnRequest, DefaultOnResponse, TraceLayer},
 };
 
 pub use error::Error;
@@ -26,6 +26,7 @@ mod extractor;
 mod financial_operation;
 mod incident;
 mod repair;
+mod statistics;
 mod user;
 
 use crate::config::Config;
@@ -60,14 +61,21 @@ fn api_router(api_context: ApiContext) -> Router {
         .merge(building::router())
         .merge(incident::router())
         .merge(repair::router())
+        .merge(statistics::router())
         .route("/health", axum::routing::get(|| async { "healthy" }))
         .layer((
             SetSensitiveHeadersLayer::new([AUTHORIZATION]),
             CompressionLayer::new(),
-            TraceLayer::new_for_http().on_failure(()),
             TimeoutLayer::new(Duration::from_secs(30)),
             CatchPanicLayer::new(),
         ))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().include_headers(true))
+                .on_request(DefaultOnRequest::new().level(tracing::Level::INFO))
+                .on_response(DefaultOnResponse::new().level(tracing::Level::INFO))
+                .on_failure(DefaultOnFailure::new().level(tracing::Level::ERROR)),
+        )
         .layer(
             CorsLayer::new()
                 .allow_origin(Any)

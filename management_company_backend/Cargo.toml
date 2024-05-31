@@ -10,7 +10,6 @@ axum = { version = "0.7.5", features = ["tower-log"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 clap = { version = "4.5.4", features = ["derive", "env"] }
 dotenv = "0.15.0"
-env_logger = "0.11.3"
 hmac = "0.12.1"
 jwt = "0.16.0"
 log = "0.4.21"
@@ -38,4 +37,6 @@ tower-http = { version = "0.5.2", features = [
     "trace",
     "cors",
 ] }
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 uuid = { version = "1.8.0", features = ["serde"] }

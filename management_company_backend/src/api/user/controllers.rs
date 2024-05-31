@@ -5,14 +5,14 @@ use crate::api::{
 };
 
 use super::{
-    models::{LoginUser, NewUser, UpdateUser, UserBody, UserResponse},
+    models::{LoginUser, NewUser, UpdateUser, UserAuthResponse, UserBody, UserResponse},
     utils::{hash_password, verify_password},
 };
 
 pub async fn create_user(
     ctx: State<ApiContext>,
     Json(req): Json<UserBody<NewUser>>,
-) -> Result<Json<UserBody<UserResponse>>> {
+) -> Result<Json<UserBody<UserAuthResponse>>> {
     if req.user.employee_id.is_none()
         || !employee_exists(&ctx.db, req.user.employee_id.unwrap()).await?
     {
@@ -34,7 +34,7 @@ pub async fn create_user(
     .await?;
 
     Ok(Json(UserBody {
-        user: UserResponse {
+        user: UserAuthResponse {
             token: AuthUser { user_id }.to_jwt(&ctx),
         },
     }))
@@ -43,7 +43,7 @@ pub async fn create_user(
 pub async fn login_user(
     ctx: State<ApiContext>,
     Json(req): Json<UserBody<LoginUser>>,
-) -> Result<Json<UserBody<UserResponse>>> {
+) -> Result<Json<UserBody<UserAuthResponse>>> {
     let optional_user = sqlx::query!(
         r#"
             select id, email, password_hash
@@ -62,7 +62,7 @@ pub async fn login_user(
     verify_password(req.user.password, user.password_hash).await?;
 
     Ok(Json(UserBody {
-        user: UserResponse {
+        user: UserAuthResponse {
             token: AuthUser { user_id: user.id }.to_jwt(&ctx),
         },
     }))
@@ -73,16 +73,23 @@ pub async fn get_current_user(
     ctx: State<ApiContext>,
 ) -> Result<Json<UserBody<UserResponse>>> {
     let optional_user = sqlx::query!(
-        r#"select email from user_account where id = $1"#,
+        r#"
+        select u.email, e.first_name, e.last_name
+        from user_account u
+        inner join employee e on u.employee_id = e.id
+        where u.id = $1"#,
         auth_user.user_id
     )
     .fetch_optional(&ctx.db)
     .await?;
 
     match optional_user {
-        Some(_) => Ok(Json(UserBody {
+        Some(user) => Ok(Json(UserBody {
             user: UserResponse {
                 token: auth_user.to_jwt(&ctx),
+                email: user.email,
+                first_name: user.first_name,
+                last_name: user.last_name,
             },
         })),
         None => Err(Error::Unauthorized.into()),
@@ -93,9 +100,9 @@ pub async fn update_user(
     auth_user: AuthUser,
     ctx: State<ApiContext>,
     Json(req): Json<UserBody<UpdateUser>>,
-) -> Result<Json<UserBody<UserResponse>>> {
+) -> Result<()> {
     if req.user == UpdateUser::default() {
-        return get_current_user(auth_user, ctx).await;
+        return Ok(());
     }
 
     let password_hash = if let Some(password) = req.user.password {
@@ -111,7 +118,7 @@ pub async fn update_user(
                 employee_id = coalesce($2, user_account.employee_id),
                 password_hash = coalesce($3, user_account.password_hash)
             where id = $4
-            returning email
+            returning email, employee_id
         "#,
         req.user.email,
         req.user.employee_id,
@@ -121,9 +128,5 @@ pub async fn update_user(
     .fetch_one(&ctx.db)
     .await?;
 
-    Ok(Json(UserBody {
-        user: UserResponse {
-            token: auth_user.to_jwt(&ctx),
-        },
-    }))
+    Ok(())
 }

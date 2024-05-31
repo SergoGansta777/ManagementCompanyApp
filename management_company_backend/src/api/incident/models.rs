@@ -12,6 +12,7 @@ pub struct IncidentType {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct IncidentDetails {
     pub id: Uuid,
     pub building: Building,
@@ -39,6 +40,7 @@ pub enum IncidentStatus {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct NewIncident {
     pub building_id: Uuid,
     pub resolved_at: Option<DateTime<Utc>>,
@@ -48,6 +50,7 @@ pub struct NewIncident {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Incident {
     pub id: Uuid,
     pub building_id: Uuid,
@@ -59,6 +62,7 @@ pub struct Incident {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct IncidentTypeList {
     pub incident_types: Vec<IncidentType>,
 }

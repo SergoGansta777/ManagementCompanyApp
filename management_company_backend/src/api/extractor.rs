@@ -42,12 +42,12 @@ impl AuthUser {
 
     fn from_authorization(ctx: &ApiContext, auth_header: &HeaderValue) -> Result<Self, Error> {
         let auth_header = auth_header.to_str().map_err(|_| {
-            log::debug!("Authorization header is not UTF-8");
+            tracing::debug!("Authorization header is not UTF-8");
             Error::Unauthorized
         })?;
 
         if !auth_header.starts_with(SCHEME_PREFIX) {
-            log::debug!(
+            tracing::debug!(
                 "Authorization header is using the wrong scheme: {:?}",
                 auth_header
             );
@@ -58,7 +58,7 @@ impl AuthUser {
 
         let jwt =
             Token::<jwt::Header, AuthUserClaims, _>::parse_unverified(token).map_err(|e| {
-                log::debug!(
+                tracing::debug!(
                     "Failed to parse Authorization header {:?} : {}",
                     auth_header,
                     e
@@ -70,14 +70,14 @@ impl AuthUser {
             .expect("HMAC-SHA-384 can accept any key length");
 
         let jwt = jwt.verify_with_key(&hmac).map_err(|e| {
-            log::debug!("JWT failed to verify: {}", e);
+            tracing::debug!("JWT failed to verify: {}", e);
             Error::Unauthorized
         })?;
 
         let (_header, claims) = jwt.into();
 
         if claims.exp < OffsetDateTime::now_utc().unix_timestamp() {
-            log::debug!("Token expired");
+            tracing::debug!("Token expired");
             return Err(Error::Unauthorized);
         }
 

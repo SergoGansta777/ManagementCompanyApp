@@ -3,6 +3,7 @@ use clap::Parser;
 use sqlx::postgres::PgPoolOptions;
 
 use config::Config;
+use tracing_subscriber::fmt::format::FmtSpan;
 
 mod api;
 mod config;
@@ -11,7 +12,9 @@ mod config;
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
 
-    env_logger::init();
+    tracing_subscriber::fmt()
+        .with_span_events(FmtSpan::FULL)
+        .init();
 
     let config = Config::parse();
 

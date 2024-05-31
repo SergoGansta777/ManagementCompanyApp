@@ -44,7 +44,7 @@ impl Error {
                 StatusCode::NOT_FOUND
             }
             Self::Sqlx(_) | Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            _ => StatusCode::FORBIDDEN,
+            Self::Forbidden => StatusCode::FORBIDDEN,
         }
     }
 }

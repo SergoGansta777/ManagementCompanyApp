@@ -20,7 +20,7 @@ pub struct LoginUser {
 }
 
 #[derive(serde::Deserialize, Default, PartialEq, Eq)]
-#[serde(default)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateUser {
     pub email: Option<String>,
     pub password: Option<String>,
@@ -28,6 +28,15 @@ pub struct UpdateUser {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserResponse {
+    pub token: String,
+    pub email: String,
+    pub first_name: String,
+    pub last_name: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct UserAuthResponse {
     pub token: String,
 }
