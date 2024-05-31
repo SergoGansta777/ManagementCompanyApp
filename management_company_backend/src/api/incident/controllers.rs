@@ -2,11 +2,15 @@ use axum::{extract::State, Json};
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
+use crate::api::{
+    building::models::{Address, Building},
+    extractor::AuthUser,
+    incident::models::IncidentStatus,
+    ApiContext, Error,
+};
 
 use super::models::{
-    Address, Building, Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList,
-    NewIncident,
+    Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList, NewIncident,
 };
 
 pub async fn get_all_incidents(
@@ -26,6 +30,7 @@ pub async fn get_all_incidents(
             b.id AS "building_id: Uuid",
             b.number AS "building_number: i32",
             b.number_of_floors AS "building_number_of_floors: i16",
+            b.construction_date,
             a.country AS "address_country!: String",
             a.region AS "address_region!: String",
             a.city AS "address_city!: String",
@@ -59,6 +64,7 @@ pub async fn get_all_incidents(
                 id: incident.building_id,
                 number: incident.building_number,
                 number_of_floors: incident.building_number_of_floors,
+                constructed_date: incident.construction_date,
                 address: Address {
                     country: incident.address_country,
                     region: incident.address_region,

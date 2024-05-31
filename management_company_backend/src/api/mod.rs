@@ -19,6 +19,7 @@ use tower_http::{
 
 pub use error::Error;
 
+mod building;
 mod employee;
 mod error;
 mod extractor;
@@ -54,6 +55,7 @@ fn api_router(api_context: ApiContext) -> Router {
     Router::new()
         .merge(user::router())
         .merge(employee::router())
+        .merge(building::router())
         .merge(incident::router())
         .route("/health", axum::routing::get(|| async { "healthy" }))
         .layer((

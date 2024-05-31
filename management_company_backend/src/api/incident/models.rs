@@ -3,21 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::Type;
 use uuid::Uuid;
 
-#[derive(Serialize)]
-pub struct Address {
-    pub country: String,
-    pub region: String,
-    pub city: String,
-    pub street: String,
-}
-
-#[derive(Serialize)]
-pub struct Building {
-    pub id: Uuid,
-    pub number: i32,
-    pub number_of_floors: i16,
-    pub address: Address,
-}
+use crate::api::building::models::Building;
 
 #[derive(Serialize)]
 pub struct IncidentType {
