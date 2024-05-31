@@ -24,6 +24,7 @@ mod employee;
 mod error;
 mod extractor;
 mod incident;
+mod repair;
 mod user;
 
 use crate::config::Config;
@@ -57,6 +58,7 @@ fn api_router(api_context: ApiContext) -> Router {
         .merge(employee::router())
         .merge(building::router())
         .merge(incident::router())
+        .merge(repair::router())
         .route("/health", axum::routing::get(|| async { "healthy" }))
         .layer((
             SetSensitiveHeadersLayer::new([AUTHORIZATION]),

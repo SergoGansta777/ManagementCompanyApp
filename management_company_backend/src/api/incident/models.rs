@@ -17,7 +17,7 @@ pub struct IncidentDetails {
     pub building: Building,
     pub reported_at: DateTime<Utc>,
     pub resolved_at: Option<DateTime<Utc>>,
-    pub status: String,
+    pub status: IncidentStatus,
     pub description: Option<String>,
     pub incident_type: IncidentType,
 }
@@ -31,6 +31,7 @@ pub struct IncidentList {
 #[sqlx(type_name = "incident_status", rename_all = "lowercase")]
 pub enum IncidentStatus {
     Reported,
+    #[sqlx(rename = "in_progress")]
     InProgress,
     Resolved,
     Closed,

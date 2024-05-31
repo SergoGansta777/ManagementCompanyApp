@@ -4,7 +4,7 @@ use controllers::{add_incident, get_all_incident_types, get_all_incidents};
 use super::ApiContext;
 
 mod controllers;
-mod models;
+pub mod models;
 
 pub(crate) fn router() -> Router<ApiContext> {
     Router::new()

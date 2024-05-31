@@ -23,7 +23,7 @@ pub async fn get_all_incidents(
             i.id,
             i.reported_at,
             i.resolved_at,
-            i.status::text,
+            i.status as "status: IncidentStatus",
             i.description,
             it.id AS "incident_type_id: Uuid",
             it.name AS "incident_type_name: String",
@@ -54,7 +54,7 @@ pub async fn get_all_incidents(
             id: incident.id,
             reported_at: incident.reported_at.unwrap_or_default(),
             resolved_at: incident.resolved_at,
-            status: incident.status.unwrap(),
+            status: incident.status,
             description: incident.description,
             incident_type: IncidentType {
                 id: incident.incident_type_id,
