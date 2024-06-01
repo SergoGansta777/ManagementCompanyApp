@@ -1,36 +1,33 @@
-use sqlx::{query_as_unchecked, query_scalar, PgPool};
-
-use crate::api::{statistics::models::MonthlyExpenses, Error};
-
 use super::models::YearOverviewStatistics;
+use crate::api::{statistics::models::MonthlyExpenses, Error};
+use sqlx::{query_as_unchecked, query_scalar, PgPool};
 
 pub async fn build_year_overview_statistics(
     pool: &PgPool,
 ) -> Result<YearOverviewStatistics, Error> {
     let total_expenses_last_year = get_total_expenses_last_year(pool).await?;
-    let percent_changes_in_expense_from_last_month =
-        get_percent_changes_in_expense_from_last_month(pool).await?;
+    let percent_changes_in_expense_from_last_year =
+        get_percent_changes_in_expense_from_last_year(pool).await?;
     let count_of_repairs_last_year = get_count_of_repairs_last_year(pool).await?;
-    let percent_changes_in_count_repair_last_month =
-        get_percent_changes_in_count_repair_last_month(pool).await?;
-    let count_of_active_repair_requests = get_count_of_count_repair_requests(pool).await?;
-    let count_changes_in_active_repair_requests_last_week =
-        get_count_changes_in_active_repair_requests_last_week(pool).await?;
+    let percent_changes_in_count_repair_last_year =
+        get_percent_changes_in_count_repair_last_year(pool).await?;
+    let count_of_active_repair_requests = get_count_repair_requests(pool).await?;
+    let percent_changes_in_active_repair_requests_last_year =
+        get_percent_changes_in_active_repair_requests_last_year(pool).await?;
     let count_of_employees = get_count_of_employees(pool).await?;
-    let changes_in_count_of_employees_last_month =
-        get_changes_in_count_of_employees_last_month(pool).await?;
+    let count_new_employee_last_year = get_count_new_employee_last_year(pool).await?;
     let expense_distribution_by_month_last_year =
         get_expence_distribution_by_month_last_year(pool).await?;
 
     Ok(YearOverviewStatistics {
         total_expenses_last_year,
-        percent_changes_in_expense_from_last_month,
+        percent_changes_in_expense_from_last_year,
         count_of_repairs_last_year,
-        percent_changes_in_count_repair_last_month,
+        percent_changes_in_count_repair_last_year,
         count_of_active_repair_requests,
-        count_changes_in_active_repair_requests_last_week,
+        percent_changes_in_active_repair_requests_last_year,
         count_of_employees,
-        changes_in_count_of_employees_last_month,
+        count_new_employee_last_year,
         expense_distribution_by_month_last_year,
     })
 }
@@ -54,35 +51,42 @@ async fn get_total_expenses_last_year(pool: &PgPool) -> Result<String, Error> {
     Ok(total_expense.unwrap())
 }
 
-/// Рассчитать процент изменения расходов за текущий месяц по сравнению с прошлым месяцем.
-async fn get_percent_changes_in_expense_from_last_month(pool: &PgPool) -> Result<f64, Error> {
+/// Рассчитать процент изменения расходов за текущий год по сравнению с прошлым.
+async fn get_percent_changes_in_expense_from_last_year(pool: &PgPool) -> Result<String, Error> {
     let changes_in_percents = query_scalar!(
         r#"
-        WITH current_month AS (
-            SELECT SUM(amount) AS expenses
+        WITH current_year AS (
+            SELECT SUM(amount)::numeric::float AS expenses
             FROM financial_operation
             WHERE type IN ('withdrawal', 'payment', 'adjustment')
-              AND date_trunc('month', happen_at) = date_trunc('month', NOW())
+              AND date_trunc('year', happen_at) = date_trunc('year', NOW())
         ),
-        previous_month AS (
-            SELECT SUM(amount) AS expenses
+        previous_year AS (
+            SELECT SUM(amount)::numeric::float AS expenses
             FROM financial_operation
             WHERE type IN ('withdrawal', 'payment', 'adjustment')
-              AND date_trunc('month', happen_at) = date_trunc('month', NOW() - INTERVAL '1 month')
+              AND date_trunc('year', happen_at) = date_trunc('year', NOW() - INTERVAL '1 year')
         )
         SELECT
             CASE
-                WHEN previous_month.expenses::numeric::int = 0 THEN NULL
-                ELSE (current_month.expenses - previous_month.expenses) / previous_month.expenses * 100
+                WHEN previous_year.expenses = 0 THEN NULL
+                ELSE (current_year.expenses - previous_year.expenses) / previous_year.expenses * 100
             END AS percent_change
         FROM
-            current_month, previous_month;
+            current_year, previous_year;
     "#
     )
     .fetch_one(pool)
     .await?;
 
-    Ok(changes_in_percents.unwrap_or(0.0)) // Default to 0.0 if NULL
+    let percent_change = changes_in_percents.unwrap_or(0.0);
+    let formatted_percent_change = if percent_change >= 0.0 {
+        format!("+{:.2}%", percent_change)
+    } else {
+        format!("{:.2}%", percent_change)
+    };
+
+    Ok(formatted_percent_change)
 }
 
 /// Подсчитать общее количество завершенных ремонтов за последний год.
@@ -104,39 +108,46 @@ async fn get_count_of_repairs_last_year(pool: &PgPool) -> Result<i64, Error> {
     Ok(count_repairs.unwrap())
 }
 
-/// Рассчитать процент изменения количества завершенных ремонтов за текущий месяц по сравнению с прошлым месяцем.
-async fn get_percent_changes_in_count_repair_last_month(pool: &PgPool) -> Result<i64, Error> {
+/// Рассчитать процент изменения количества завершенных ремонтов за текущий год по сравнению с предыдущим.
+async fn get_percent_changes_in_count_repair_last_year(pool: &PgPool) -> Result<String, Error> {
     let changes_in_percents = query_scalar!(
         r#"
-        WITH current_month AS (
+        WITH current_year AS (
             SELECT COUNT(*) AS repairs
             FROM repair
             WHERE ended_at IS NOT NULL
-              AND date_trunc('month', started_at) = date_trunc('month', NOW())
+              AND date_trunc('year', started_at) = date_trunc('year', NOW())
         ),
-        previous_month AS (
+        previous_year AS (
             SELECT COUNT(*) AS repairs
             FROM repair
             WHERE ended_at IS NOT NULL
-              AND date_trunc('month', started_at) = date_trunc('month', NOW() - INTERVAL '1 month')
+              AND date_trunc('year', started_at) = date_trunc('year', NOW() - INTERVAL '1 year')
         )
         SELECT
             CASE
-                WHEN previous_month.repairs = 0 THEN NULL
-                ELSE (current_month.repairs - previous_month.repairs) / previous_month.repairs * 100
+                WHEN previous_year.repairs = 0 THEN NULL
+                ELSE ((current_year.repairs - previous_year.repairs) / previous_year.repairs * 100.0)::numeric::float
             END AS percent_change
         FROM
-            current_month, previous_month;
+            current_year, previous_year;
     "#
     )
     .fetch_one(pool)
     .await?;
 
-    Ok(changes_in_percents.unwrap_or(0))
+    let percent_change = changes_in_percents.unwrap_or(0.0);
+    let formatted_percent_change = if percent_change >= 0.0 {
+        format!("+{:.2}%", percent_change)
+    } else {
+        format!("{:.2}%", percent_change)
+    };
+
+    Ok(formatted_percent_change)
 }
 
 /// Получить количество текущих активных заявок на ремонт.
-async fn get_count_of_count_repair_requests(pool: &PgPool) -> Result<i64, Error> {
+async fn get_count_repair_requests(pool: &PgPool) -> Result<i64, Error> {
     let count_active_requests = query_scalar!(
         r#"
         SELECT
@@ -153,37 +164,45 @@ async fn get_count_of_count_repair_requests(pool: &PgPool) -> Result<i64, Error>
     Ok(count_active_requests.unwrap())
 }
 
-/// Подсчитать изменение количества активных заявок на ремонт за последнюю неделю.
-async fn get_count_changes_in_active_repair_requests_last_week(
+/// Подсчитать изменение количества активных заявок на ремонт в этот год по сравнению с предыдущим.
+async fn get_percent_changes_in_active_repair_requests_last_year(
     pool: &PgPool,
-) -> Result<i64, Error> {
+) -> Result<String, Error> {
     let changes_in_percents = query_scalar!(
         r#"
-        WITH current_week AS (
+        WITH current_year AS (
             SELECT COUNT(*) AS active_incidents
             FROM incident
             WHERE status IN ('reported', 'in_progress')
-              AND reported_at >= NOW() - INTERVAL '1 week'
+              AND reported_at >= date_trunc('year', NOW())
         ),
-        previous_week AS (
+        previous_year AS (
             SELECT COUNT(*) AS active_incidents
             FROM incident
             WHERE status IN ('reported', 'in_progress')
-              AND reported_at BETWEEN NOW() - INTERVAL '2 weeks' AND NOW() - INTERVAL '1 week'
+              AND reported_at >= date_trunc('year', NOW() - INTERVAL '1 year')
+              AND reported_at < date_trunc('year', NOW())
         )
         SELECT
             CASE
-                WHEN previous_week.active_incidents = 0 THEN NULL
-                ELSE (current_week.active_incidents - previous_week.active_incidents)
-            END AS change_in_active_incidents
+                WHEN previous_year.active_incidents = 0 THEN NULL
+                ELSE ((current_year.active_incidents - previous_year.active_incidents) / previous_year.active_incidents * 100.0)::numeric::float
+            END AS percent_change
         FROM
-            current_week, previous_week;
+            current_year, previous_year;
     "#
     )
     .fetch_one(pool)
     .await?;
 
-    Ok(changes_in_percents.unwrap_or(0)) // Default to 0 if NULL
+    let percent_change = changes_in_percents.unwrap_or(0.0);
+    let formatted_percent_change = if percent_change >= 0.0 {
+        format!("+{:.2}%", percent_change)
+    } else {
+        format!("{:.2}%", percent_change)
+    };
+
+    Ok(formatted_percent_change)
 }
 
 /// Подсчитать общее количество сотрудников.
@@ -202,33 +221,22 @@ async fn get_count_of_employees(pool: &PgPool) -> Result<i64, Error> {
     Ok(employee_count.unwrap())
 }
 
-/// Рассчитать изменение количества сотрудников за последний месяц.
-async fn get_changes_in_count_of_employees_last_month(pool: &PgPool) -> Result<i64, Error> {
-    let changes_in_percents = query_scalar!(
+/// Рассчитать количество новых сотрудников в этом году.
+async fn get_count_new_employee_last_year(pool: &PgPool) -> Result<i64, Error> {
+    let new_employees_count = query_scalar!(
         r#"
-        WITH current_month AS (
-            SELECT COUNT(*) AS employees
-            FROM employee
-            WHERE date_trunc('month', NOW()) = date_trunc('month', NOW())
-        ),
-        previous_month AS (
-            SELECT COUNT(*) AS employees
-            FROM employee
-            WHERE date_trunc('month', NOW() - INTERVAL '1 month') = date_trunc('month', NOW() - INTERVAL '1 month')
-        )
-        SELECT
-            (current_month.employees - previous_month.employees) AS change_in_employees
-        FROM
-            current_month, previous_month;
+        SELECT COUNT(*) AS employees
+        FROM employee
+        WHERE started_at >= date_trunc('year', NOW());
     "#
     )
     .fetch_one(pool)
     .await?;
 
-    Ok(changes_in_percents.unwrap())
+    Ok(new_employees_count.unwrap_or(0))
 }
 
-/// Рассчитать изменение количества сотрудников за последний месяц.
+/// Рассчитать распределение затрат по месяцам за последний год.
 async fn get_expence_distribution_by_month_last_year(
     pool: &PgPool,
 ) -> Result<Vec<MonthlyExpenses>, Error> {

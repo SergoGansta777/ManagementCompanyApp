@@ -91,13 +91,14 @@ export default function Dashboard() {
           <Card>
             <CardHeader
               className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Сотрудники</CardTitle>
+              <CardTitle className='text-sm font-medium'> Новые
+                сотрудники</CardTitle>
               <PersonStandingIcon className='size-5' />
             </CardHeader>
             <CardContent>
               <div className='text-2xl font-bold'>12,234</div>
               <p className='text-xs text-muted-foreground'>
-                +34 за последний месяц
+                Всего 120 сотрудников
               </p>
             </CardContent>
           </Card>
@@ -130,12 +131,12 @@ export default function Dashboard() {
 
 const topNav = [
   {
-    title: 'Обзор',
+    title: 'За последний год',
     href: 'dashboard/overview',
     isActive: true
   },
   {
-    title: 'Customers',
+    title: 'За интервал времени',
     href: 'dashboard/customers',
     isActive: false
   },
