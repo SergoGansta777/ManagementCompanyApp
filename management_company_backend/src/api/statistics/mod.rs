@@ -13,5 +13,5 @@ pub(crate) fn router() -> Router<ApiContext> {
             "/api/statistics/year_overview",
             get(get_year_overview_statistics),
         )
-        .route("/api/statistics/building/:id", get(get_building_statistics))
+        .route("/api/statistics/building", get(get_building_statistics))
 }

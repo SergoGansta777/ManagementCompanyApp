@@ -49,7 +49,6 @@ export default function Dashboard() {
           </div>
         )
       }
-      
       {isSuccess &&
         (
           <LayoutBody className='space-y-4'>
@@ -166,22 +165,12 @@ export default function Dashboard() {
 const topNav = [
   {
     title: 'За последний год',
-    href: 'dashboard/overview',
+    href: '/',
     isActive: true
   },
   {
-    title: 'За интервал времени',
-    href: 'dashboard/customers',
-    isActive: false
-  },
-  {
-    title: 'Products',
-    href: 'dashboard/products',
-    isActive: false
-  },
-  {
-    title: 'Settings',
-    href: 'dashboard/settings',
+    title: 'Отчет по зданиям',
+    href: '/statistics/building',
     isActive: false
   }
 ]

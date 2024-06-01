@@ -1,13 +1,13 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Query, State},
     Json,
 };
-use uuid::Uuid;
+use chrono::{DateTime, TimeZone, Utc};
 
 use crate::api::{extractor::AuthUser, ApiContext, Error};
 
 use super::{
-    models::{BuildingStatistics, QueryTimeDiapasonParams, YearOverviewStatistics},
+    models::{QueryTimeDiapasonParams, SummaryStatistics, YearOverviewStatistics},
     utils::{build_statistics_for_building, build_year_overview_statistics},
 };
 
@@ -22,10 +22,14 @@ pub async fn get_year_overview_statistics(
 pub async fn get_building_statistics(
     _: AuthUser,
     ctx: State<ApiContext>,
-    Path(id): Path<Uuid>,
     Query(params): Query<QueryTimeDiapasonParams>,
-) -> Result<Json<BuildingStatistics>, Error> {
-    let report =
-        build_statistics_for_building(&ctx.db, id, params.start_date, params.end_date).await?;
+) -> Result<Json<SummaryStatistics>, Error> {
+    let start_date_time = params.start_date.and_hms(0, 0, 0);
+    let end_date_time = params.end_date.and_hms(0, 0, 0);
+
+    let start_date_utc: DateTime<Utc> = Utc.from_utc_datetime(&start_date_time);
+    let end_date_utc: DateTime<Utc> = Utc.from_utc_datetime(&end_date_time);
+
+    let report = build_statistics_for_building(&ctx.db, start_date_utc, end_date_utc).await?;
     Ok(Json(report))
 }

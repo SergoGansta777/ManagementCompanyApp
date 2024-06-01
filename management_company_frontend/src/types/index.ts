@@ -1,5 +1,11 @@
 import { z } from 'zod'
 
+export const rub_format = new Intl.NumberFormat('ru-Ru', {
+  style: 'currency',
+  currency: 'RUB',
+  maximumSignificantDigits: 3
+})
+
 export interface IUserResponse {
   token: string;
 }
@@ -61,4 +67,37 @@ export interface StatisticOverviewLastYear {
   expenseDistributionByMonthLastYear: ExpenseDistributionByMonth[];
   totalIncidentsLastYear: number;
   top5IncidentTypesLastYear: IncidentTypeStatistic[]
+}
+
+export interface RepairCount {
+  emergencyRepairs: number;
+  scheduledRepairs: number;
+  total: number;
+}
+
+export interface IncidentCost {
+  incidentType: string;
+  totalCost: number;
+}
+
+export interface BuildingRepairCost {
+  buildingId: string,
+  buildingNumber: number,
+  totalCost: number,
+  repairCount: number
+}
+
+export interface Overview {
+  buildingId: string;
+  totalIncidents: number;
+  totalCost: number;
+  repairCounts: RepairCount;
+  incidentCosts: IncidentCost[];
+  topBuildingsByRepairCost: BuildingRepairCost[]
+}
+
+
+export interface QueryTimeDiapasonParams {
+  startDate: string; // DateTime as ISO string
+  endDate: string;   // DateTime as ISO string
 }

@@ -1,4 +1,4 @@
-import type { ExpenseDistributionByMonth } from '@/types'
+import { type ExpenseDistributionByMonth, rub_format } from '@/types'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 interface ExpensesByMonthGraphicProps {
@@ -6,12 +6,6 @@ interface ExpensesByMonthGraphicProps {
 }
 
 export function ExpensesDistributionByMonth({ data }: ExpensesByMonthGraphicProps) {
-  const rub_format = new Intl.NumberFormat('ru-Ru', {
-    style: 'currency',
-    currency: 'RUB',
-    maximumSignificantDigits: 3
-  })
-  
   return (
     <ResponsiveContainer width='100%' height={420}>
       <BarChart data={data}>

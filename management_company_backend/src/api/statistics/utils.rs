@@ -1,11 +1,10 @@
 use super::models::{
-    BuildingStatistics, BuildingSummary, IncidentCost, IncidentTypeInfo, RepairCount,
-    YearOverviewStatistics,
+    BuildingRepairCost, BuildingSummary, IncidentCost, IncidentTypeInfo, RepairCount,
+    SummaryStatistics, YearOverviewStatistics,
 };
 use crate::api::{statistics::models::MonthlyExpenses, Error};
 use chrono::{DateTime, Utc};
 use sqlx::{query_as_unchecked, query_scalar, PgPool};
-use uuid::Uuid;
 
 pub async fn build_year_overview_statistics(
     pool: &PgPool,
@@ -43,21 +42,21 @@ pub async fn build_year_overview_statistics(
 
 pub async fn build_statistics_for_building(
     pool: &PgPool,
-    building_id: Uuid,
     start_date: DateTime<Utc>,
     end_date: DateTime<Utc>,
-) -> Result<BuildingStatistics, Error> {
-    let building_summary = get_building_summary(pool, building_id, start_date, end_date).await?;
-    let repair_counts = get_repair_counts(pool, building_id, start_date, end_date).await?;
-    let incident_costs =
-        get_total_costs_by_incident_type(pool, building_id, start_date, end_date).await?;
+) -> Result<SummaryStatistics, Error> {
+    let summary = get_summary(pool, start_date, end_date).await?;
+    let repair_counts = get_repair_counts(pool, start_date, end_date).await?;
+    let incident_costs = get_total_costs_by_incident_type(pool, start_date, end_date).await?;
+    let top_buildings_by_repair_cost =
+        get_top_10_buildings_by_repair_costs(pool, start_date, end_date).await?;
 
-    Ok(BuildingStatistics {
-        building_id,
-        total_incidents: building_summary.total_incidents,
-        total_cost: building_summary.total_cost,
+    Ok(SummaryStatistics {
+        total_incidents: summary.total_incidents,
+        total_cost: summary.total_cost,
         repair_counts,
         incident_costs,
+        top_buildings_by_repair_cost,
     })
 }
 
@@ -70,7 +69,7 @@ async fn get_total_expenses_last_year(pool: &PgPool) -> Result<String, Error> {
         FROM
             financial_operation
         WHERE
-            type IN ('withdrawal', 'payment')
+            type IN ('withdrawal', 'payment', 'adjustment')
             AND happen_at >= NOW() - INTERVAL '1 year';
         "#
     )
@@ -341,10 +340,72 @@ async fn get_top_5_incident_types_last_year(pool: &PgPool) -> Result<Vec<Inciden
     Ok(top_incidents)
 }
 
-/// Получение суммарных затрат на устранение аварий по типам инцидентов для конкретного здания
+/// Число аварийных и плановых ремонтов за период
+async fn get_repair_counts(
+    pool: &PgPool,
+    start_date: DateTime<Utc>,
+    end_date: DateTime<Utc>,
+) -> Result<RepairCount, Error> {
+    let result = sqlx::query!(
+        r#"
+        SELECT
+            COUNT(CASE WHEN r.type = 'emergency' THEN 1 END) AS emergency_repairs,
+            COUNT(CASE WHEN r.type = 'scheduled' THEN 1 END) AS scheduled_repairs
+        FROM
+            repair r
+        WHERE
+            r.started_at BETWEEN $1 AND $2
+        "#,
+        start_date,
+        end_date
+    )
+    .fetch_one(pool)
+    .await?;
+    let emergency_repairs = result.emergency_repairs.unwrap_or(0);
+    let scheduled_repairs = result.scheduled_repairs.unwrap_or(0);
+    let total = emergency_repairs + scheduled_repairs;
+
+    Ok(RepairCount {
+        emergency_repairs,
+        scheduled_repairs,
+        total,
+    })
+}
+
+/// Получение общего числа аварий и суммарных затрат за период
+async fn get_summary(
+    pool: &PgPool,
+    start_date: DateTime<Utc>,
+    end_date: DateTime<Utc>,
+) -> Result<BuildingSummary, Error> {
+    let result = sqlx::query_as_unchecked!(
+        BuildingSummary,
+        r#"
+        SELECT
+            COUNT(i.id) AS total_incidents,
+            COALESCE(SUM(fo.amount)::NUMERIC::FLOAT, 0) AS total_cost
+        FROM
+            incident i
+        JOIN
+            repair r ON i.id = r.incident_id
+        JOIN
+            financial_operation fo ON r.id = fo.repair_id
+        WHERE
+            i.reported_at BETWEEN $1 AND $2
+            AND fo.happen_at BETWEEN $1 AND $2
+        "#,
+        start_date,
+        end_date
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result)
+}
+
+/// Получение суммарных затрат на устранение аварий по типам инцидентов
 async fn get_total_costs_by_incident_type(
     pool: &PgPool,
-    building_id: Uuid,
     start_date: DateTime<Utc>,
     end_date: DateTime<Utc>,
 ) -> Result<Vec<IncidentCost>, Error> {
@@ -363,13 +424,12 @@ async fn get_total_costs_by_incident_type(
         JOIN
             incident_type it ON i.incident_type_id = it.id
         WHERE
-            i.building_id = $1
-            AND i.reported_at BETWEEN $2 AND $3
-            AND fo.happen_at BETWEEN $2 AND $3
+            i.reported_at BETWEEN $1 AND $2
+            AND fo.happen_at BETWEEN $1 AND $2
         GROUP BY
-            it.name;
+            it.name
+        ORDER BY total_cost DESC
         "#,
-        building_id,
         start_date,
         end_date
     )
@@ -378,73 +438,41 @@ async fn get_total_costs_by_incident_type(
 
     Ok(results)
 }
-/// Получение общего числа аварий и суммарных затрат для здания за период
-async fn get_building_summary(
+
+/// Получение 10 домов с наибольшими тратами на ремонты, с количеством ремонтов за указанный период
+async fn get_top_10_buildings_by_repair_costs(
     pool: &PgPool,
-    building_id: Uuid,
     start_date: DateTime<Utc>,
     end_date: DateTime<Utc>,
-) -> Result<BuildingSummary, Error> {
-    let result = sqlx::query_as_unchecked!(
-        BuildingSummary,
+) -> Result<Vec<BuildingRepairCost>, Error> {
+    let results = sqlx::query_as_unchecked!(
+        BuildingRepairCost,
         r#"
         SELECT
-            COUNT(i.id) AS total_incidents,
-            COALESCE(SUM(fo.amount)::Numeric::FLOAT, 0) AS total_cost
+            b.id AS building_id,
+            b.number AS building_number,
+            COALESCE(SUM(fo.amount)::NUMERIC::FLOAT, 0) AS total_cost,
+            COUNT(r.id) AS repair_count
         FROM
-            incident i
+            building b
         JOIN
-            repair r ON i.id = r.incident_id
+            repair r ON b.id = r.building_id
         JOIN
             financial_operation fo ON r.id = fo.repair_id
         WHERE
-            i.building_id = $1
-            AND i.reported_at BETWEEN $2 AND $3
-            AND fo.happen_at BETWEEN $2 AND $3
+            r.started_at BETWEEN $1 AND $2
+            AND fo.happen_at BETWEEN $1 AND $2
+        GROUP BY
+            b.id, b.number
+        ORDER BY
+            total_cost DESC
+        LIMIT 10;
         "#,
-        building_id,
         start_date,
         end_date
     )
-    .fetch_one(pool)
+    .fetch_all(pool)
     .await?;
 
-    Ok(result)
-}
-
-/// Число аварийных и плановых ремонтов у здания
-async fn get_repair_counts(
-    pool: &PgPool,
-    building_id: Uuid,
-    start_date: DateTime<Utc>,
-    end_date: DateTime<Utc>,
-) -> Result<RepairCount, Error> {
-    let result = sqlx::query!(
-        r#"
-        SELECT
-            COUNT(CASE WHEN r.type = 'emergency' THEN 1 END) AS emergency_repairs,
-            COUNT(CASE WHEN r.type = 'scheduled' THEN 1 END) AS scheduled_repairs
-        FROM
-            repair r
-        JOIN
-            incident i ON r.incident_id = i.id
-        WHERE
-            i.building_id = $1
-            AND r.started_at BETWEEN $2 AND $3
-        "#,
-        building_id,
-        start_date,
-        end_date
-    )
-    .fetch_one(pool)
-    .await?;
-    let emergency_repairs = result.emergency_repairs.unwrap_or(0);
-    let scheduled_repairs = result.scheduled_repairs.unwrap_or(0);
-    let total = emergency_repairs + scheduled_repairs;
-
-    Ok(RepairCount {
-        emergency_repairs,
-        scheduled_repairs,
-        total,
-    })
+    Ok(results)
 }

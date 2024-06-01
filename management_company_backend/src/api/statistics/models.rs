@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use chrono::NaiveDate;
+use serde::{de, Deserialize, Deserializer, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -58,17 +58,38 @@ pub struct RepairCount {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BuildingStatistics {
-    pub building_id: Uuid,
+pub struct SummaryStatistics {
     pub total_incidents: i64,
     pub total_cost: f64,
     pub repair_counts: RepairCount,
     pub incident_costs: Vec<IncidentCost>,
+    pub top_buildings_by_repair_cost: Vec<BuildingRepairCost>,
+}
+
+const DATE_FORMAT: &str = "%Y-%m-%d";
+
+fn parse_date<'de, D>(deserializer: D) -> Result<NaiveDate, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    NaiveDate::parse_from_str(&s, DATE_FORMAT).map_err(de::Error::custom)
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QueryTimeDiapasonParams {
-    pub start_date: DateTime<Utc>,
-    pub end_date: DateTime<Utc>,
+    #[serde(deserialize_with = "parse_date")]
+    pub start_date: NaiveDate,
+    #[serde(deserialize_with = "parse_date")]
+    pub end_date: NaiveDate,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BuildingRepairCost {
+    pub building_id: Uuid,
+    pub building_number: i32,
+    pub total_cost: f64,
+    pub repair_count: i64,
 }
