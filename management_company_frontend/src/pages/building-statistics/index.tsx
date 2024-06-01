@@ -137,28 +137,28 @@ export default function Dashboard() {
                   className='flex flex-col gap-4 items-start justify-between w-full'>
                   <CardDescription
                     className='flex flex-col items-center justify-between w-full'>
-                    <div
+                    <span
                       className='flex flex-row items-center justify-between w-full'>
-                      <div>
+                      <span>
                         Всего ремонтов
-                      </div>
+                      </span>
                       <span
                       >{data.repairCounts.total}</span>
-                    </div>
-                    <div
+                    </span>
+                    <span
                       className='flex flex-row items-center justify-between w-full'>
-                      <div>
+                      <span>
                         Аварийных ремонтов
-                      </div>
+                      </span>
                       {data.repairCounts.emergencyRepairs}
-                    </div>
-                    <div
+                    </span>
+                    <span
                       className='flex flex-row items-center justify-between w-full'>
-                      <div>
+                      <span>
                         Плановых ремонтов
-                      </div>
+                      </span>
                       {data.repairCounts.scheduledRepairs}
-                    </div>
+                    </span>
                   </CardDescription>
                 </CardContent>
               </Card>
