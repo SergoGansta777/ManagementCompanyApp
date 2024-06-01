@@ -36,3 +36,29 @@ export const signupScheme = z.object({
 })
 
 export type SignupInput = z.infer<typeof signupScheme>;
+
+export interface ExpenseDistributionByMonth {
+  name: string;
+  total: number;
+}
+
+export interface IncidentTypeStatistic {
+  id: string,
+  name: string,
+  count: number,
+  percentage: string
+}
+
+export interface StatisticOverviewLastYear {
+  totalExpensesLastYear: string;
+  percentChangesInExpenseFromLastYear: string;
+  countOfRepairsLastYear: number;
+  percentChangesInCountRepairLastYear: string;
+  countOfActiveRepairRequests: number;
+  percentChangesInActiveRepairRequestsLastYear: string;
+  countOfEmployees: number;
+  countNewEmployeeLastYear: number;
+  expenseDistributionByMonthLastYear: ExpenseDistributionByMonth[];
+  totalIncidentsLastYear: number;
+  top5IncidentTypesLastYear: IncidentTypeStatistic[]
+}

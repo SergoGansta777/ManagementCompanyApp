@@ -1,4 +1,4 @@
-use super::models::YearOverviewStatistics;
+use super::models::{IncidentTypeInfo, YearOverviewStatistics};
 use crate::api::{statistics::models::MonthlyExpenses, Error};
 use sqlx::{query_as_unchecked, query_scalar, PgPool};
 
@@ -18,6 +18,8 @@ pub async fn build_year_overview_statistics(
     let count_new_employee_last_year = get_count_new_employee_last_year(pool).await?;
     let expense_distribution_by_month_last_year =
         get_expence_distribution_by_month_last_year(pool).await?;
+    let top_5_incident_types_last_year = get_top_5_incident_types_last_year(pool).await?;
+    let total_incidents_last_year = get_total_incidents_last_year(pool).await?;
 
     Ok(YearOverviewStatistics {
         total_expenses_last_year,
@@ -29,6 +31,8 @@ pub async fn build_year_overview_statistics(
         count_of_employees,
         count_new_employee_last_year,
         expense_distribution_by_month_last_year,
+        top_5_incident_types_last_year,
+        total_incidents_last_year,
     })
 }
 
@@ -80,12 +84,7 @@ async fn get_percent_changes_in_expense_from_last_year(pool: &PgPool) -> Result<
     .await?;
 
     let percent_change = changes_in_percents.unwrap_or(0.0);
-    let formatted_percent_change = if percent_change >= 0.0 {
-        format!("+{:.2}%", percent_change)
-    } else {
-        format!("{:.2}%", percent_change)
-    };
-
+    let formatted_percent_change = format_percents_with_sign(percent_change);
     Ok(formatted_percent_change)
 }
 
@@ -136,13 +135,8 @@ async fn get_percent_changes_in_count_repair_last_year(pool: &PgPool) -> Result<
     .fetch_one(pool)
     .await?;
 
-    let percent_change = changes_in_percents.unwrap_or(0.0);
-    let formatted_percent_change = if percent_change >= 0.0 {
-        format!("+{:.2}%", percent_change)
-    } else {
-        format!("{:.2}%", percent_change)
-    };
-
+    let percent_change = changes_in_percents.unwrap_or(0.0) + 34.23; //TODO: remove after testing
+    let formatted_percent_change = format_percents_with_sign(percent_change);
     Ok(formatted_percent_change)
 }
 
@@ -195,14 +189,19 @@ async fn get_percent_changes_in_active_repair_requests_last_year(
     .fetch_one(pool)
     .await?;
 
-    let percent_change = changes_in_percents.unwrap_or(0.0);
+    let percent_change = changes_in_percents.unwrap_or(0.0) + 29.2; //TODO: remove after testing
+    let formatted_percent_change = format_percents_with_sign(percent_change);
+
+    Ok(formatted_percent_change)
+}
+
+fn format_percents_with_sign(percent_change: f64) -> String {
     let formatted_percent_change = if percent_change >= 0.0 {
         format!("+{:.2}%", percent_change)
     } else {
         format!("{:.2}%", percent_change)
     };
-
-    Ok(formatted_percent_change)
+    formatted_percent_change
 }
 
 /// Подсчитать общее количество сотрудников.
@@ -233,7 +232,7 @@ async fn get_count_new_employee_last_year(pool: &PgPool) -> Result<i64, Error> {
     .fetch_one(pool)
     .await?;
 
-    Ok(new_employees_count.unwrap_or(0))
+    Ok(new_employees_count.unwrap_or(0) - 14) //TODO: remove after testing
 }
 
 /// Рассчитать распределение затрат по месяцам за последний год.
@@ -244,15 +243,15 @@ async fn get_expence_distribution_by_month_last_year(
         MonthlyExpenses,
         r#"
         SELECT
-            TO_CHAR(happen_at, 'Month')::text AS month,
-            SUM(amount)::Numeric::Int AS expenses
+            TO_CHAR(happen_at, 'TMMon')::text AS name,
+            SUM(amount)::Numeric::Int AS total
         FROM
             financial_operation
         WHERE
             type IN ('withdrawal', 'payment', 'adjustment')
             AND happen_at >= NOW() - INTERVAL '1 year'
         GROUP BY
-            TO_CHAR(happen_at, 'Month'),
+            TO_CHAR(happen_at, 'TMMon'),
             EXTRACT(MONTH FROM happen_at)
         ORDER BY
             EXTRACT(MONTH FROM happen_at);
@@ -262,4 +261,57 @@ async fn get_expence_distribution_by_month_last_year(
     .await?;
 
     Ok(distributions)
+}
+
+async fn get_total_incidents_last_year(pool: &PgPool) -> Result<i64, Error> {
+    let total_incidents = sqlx::query_scalar!(
+        r#"
+        SELECT COUNT(*)
+        FROM incident
+        WHERE reported_at >= NOW() - INTERVAL '1 year';
+        "#
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(total_incidents.unwrap_or(0))
+}
+
+async fn get_top_5_incident_types_last_year(pool: &PgPool) -> Result<Vec<IncidentTypeInfo>, Error> {
+    let total_incidents = get_total_incidents_last_year(pool).await?;
+
+    let incident_types = sqlx::query!(
+        r#"
+        SELECT
+            it.id,
+            it.name,
+            COUNT(i.id) AS count,
+            (COUNT(i.id) * 100.0 / $1)::numeric::float AS percentage
+        FROM
+            incident_type it
+            JOIN incident i ON i.incident_type_id = it.id
+        WHERE
+            i.reported_at >= NOW() - INTERVAL '1 year'
+        GROUP BY
+            it.id, it.name
+        ORDER BY
+            count DESC
+        LIMIT 5;
+        "#,
+        total_incidents as f64
+    )
+    .fetch_all(pool)
+    .await?;
+
+    let top_incidents: Vec<IncidentTypeInfo> = incident_types
+        .into_iter()
+        .map(|record| IncidentTypeInfo {
+            id: record.id,
+            name: record.name,
+            count: record.count.unwrap(),
+            percentage: format!("{:.2}%", record.percentage.unwrap()),
+        })
+        .collect();
+
+    Ok(top_incidents)
 }

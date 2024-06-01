@@ -1,10 +1,11 @@
 use serde::Serialize;
+use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MonthlyExpenses {
-    pub month: String,
-    pub expenses: i32,
+    pub name: String,
+    pub total: i32,
 }
 
 #[derive(Debug, Serialize)]
@@ -19,4 +20,15 @@ pub struct YearOverviewStatistics {
     pub count_of_employees: i64,
     pub count_new_employee_last_year: i64,
     pub expense_distribution_by_month_last_year: Vec<MonthlyExpenses>,
+    pub total_incidents_last_year: i64,
+    pub top_5_incident_types_last_year: Vec<IncidentTypeInfo>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IncidentTypeInfo {
+    pub id: Uuid,
+    pub name: String,
+    pub count: i64,
+    pub percentage: String,
 }
