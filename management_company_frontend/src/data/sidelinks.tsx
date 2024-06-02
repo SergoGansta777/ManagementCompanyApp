@@ -1,7 +1,8 @@
 import {
   IconAlertTriangle,
   IconLayoutDashboard,
-  IconReport, IconUsers
+  IconReport,
+  IconUsers
 } from '@tabler/icons-react'
 
 export interface NavLink {

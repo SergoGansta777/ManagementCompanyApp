@@ -9,7 +9,7 @@ export function usePathname() {
 
 export function useRouter() {
   const navigate = useNavigate()
-
+  
   return useMemo(
     () => ({
       back: () => navigate(-1),

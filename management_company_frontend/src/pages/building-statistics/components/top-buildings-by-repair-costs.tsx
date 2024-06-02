@@ -1,8 +1,5 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
-import {
-  type BuildingRepairCost,
-  rub_format
-} from '@/types'
+import { type BuildingRepairCost, rub_format } from '@/types'
 import { IconHome } from '@tabler/icons-react'
 
 interface TopBuildingsByRepairCostsProps {

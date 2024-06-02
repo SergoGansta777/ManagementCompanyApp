@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react'
+import { sidelinks } from '@/data/sidelinks'
+import { cn } from '@/lib/utils'
 import {
   IconChevronsLeft,
   IconMenu2,
   IconTrafficCone,
   IconX
 } from '@tabler/icons-react'
-import { Layout, LayoutHeader } from './ui/layout'
-import { Button } from './ui/button'
+import React, { useEffect, useState } from 'react'
 import Nav from './nav'
-import { cn } from '@/lib/utils'
-import { sidelinks } from '@/data/sidelinks'
+import { Button } from './ui/button'
+import { Layout, LayoutHeader } from './ui/layout'
 
 interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   isCollapsed: boolean

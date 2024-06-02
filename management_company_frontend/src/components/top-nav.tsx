@@ -1,14 +1,14 @@
-import { cn } from '@/lib/utils'
-import React from 'react'
-import { Link } from 'react-router-dom'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Button } from './ui/button'
+import { cn } from '@/lib/utils'
 import { IconMenu } from '@tabler/icons-react'
+import React from 'react'
+import { Link } from 'react-router-dom'
+import { Button } from './ui/button'
 
 interface TopNavProps extends React.HTMLAttributes<HTMLElement> {
   links: {

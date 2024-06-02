@@ -1,9 +1,6 @@
 import { Card, CardDescription, CardTitle } from '@/components/ui/card.tsx'
 import { ScrollArea } from '@/components/ui/scroll-area.tsx'
-import {
-  type IncidentCost,
-  rub_format
-} from '@/types'
+import { type IncidentCost, rub_format } from '@/types'
 
 interface IncidentTypeCostsProps {
   incidentTypes: IncidentCost[]

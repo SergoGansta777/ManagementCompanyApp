@@ -1,11 +1,17 @@
 'use client'
 
-import { type FC, useState, useEffect, useRef } from 'react'
+import { cn } from '@/lib/utils'
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from '@radix-ui/react-icons'
+import { type FC, useEffect, useRef, useState } from 'react'
 import { Button } from './ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Calendar } from './ui/calendar'
 import { DateInput } from './ui/date-input'
 import { Label } from './ui/label'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import {
   Select,
   SelectContent,
@@ -14,12 +20,6 @@ import {
   SelectValue
 } from './ui/select'
 import { Switch } from './ui/switch'
-import {
-  ChevronUpIcon,
-  ChevronDownIcon,
-  CheckIcon
-} from '@radix-ui/react-icons'
-import { cn } from '@/lib/utils'
 
 export interface DateRangePickerProps {
   /** Click handler for applying the updates from DateRangePicker. */
@@ -54,8 +54,7 @@ const getDateAdjustedForTimezone = (dateInput: Date | string): Date => {
     const parts = dateInput.split('-').map((part) => parseInt(part, 10))
     // Create a new Date object using the local timezone
     // Note: Month is 0-indexed, so subtract 1 from the month part
-    const date = new Date(parts[0], parts[1] - 1, parts[2])
-    return date
+    return new Date(parts[0], parts[1] - 1, parts[2])
   } else {
     // If dateInput is already a Date object, return it directly
     return dateInput
@@ -286,7 +285,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
   
   useEffect(() => {
     checkPreset()
-  }, [range])
+  }, [checkPreset, range])
   
   const PresetButton = ({
                           preset,

@@ -1,4 +1,6 @@
 import { GetYearStatisticOverview } from '@/api/statisticApi.ts'
+import ThemeSwitch from '@/components/theme-switch'
+import { TopNav } from '@/components/top-nav'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -7,11 +9,9 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import ThemeSwitch from '@/components/theme-switch'
-import { TopNav } from '@/components/top-nav'
+import { Layout, LayoutBody, LayoutHeader } from '@/components/ui/layout'
 import Loader from '@/components/ui/loader.tsx'
 import { UserNav } from '@/components/user-nav'
-import { Layout, LayoutBody, LayoutHeader } from '@/components/ui/layout'
 import { useQuery } from '@tanstack/react-query'
 import {
   ActivityIcon,
@@ -20,11 +20,11 @@ import {
   WrenchIcon
 } from 'lucide-react'
 import {
-  TopFrequentIncidentTypes
-} from './components/top-frequent-incident-types.tsx'
-import {
   ExpensesDistributionByMonth
 } from './components/expensesDistributionByMonth.tsx'
+import {
+  TopFrequentIncidentTypes
+} from './components/top-frequent-incident-types.tsx'
 
 
 export default function Dashboard() {

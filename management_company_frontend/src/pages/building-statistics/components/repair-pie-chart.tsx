@@ -1,5 +1,5 @@
 import type { RepairCount } from '@/types'
-import { Pie, PieChart, Tooltip, Legend } from 'recharts'
+import { Legend, Pie, PieChart, Tooltip } from 'recharts'
 
 export interface RepairPieChartProps {
   repairCounts: RepairCount

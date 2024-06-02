@@ -1,7 +1,7 @@
 import RequireAuth from '@/components/require-auth.tsx'
+import useIsCollapsed from '@/hooks/use-is-collapsed'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './sidebar'
-import useIsCollapsed from '@/hooks/use-is-collapsed'
 
 export default function AppShell() {
   const [isCollapsed, setIsCollapsed] = useIsCollapsed()

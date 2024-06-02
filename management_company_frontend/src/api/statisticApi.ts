@@ -1,8 +1,5 @@
 import axiosInstance from '@/api/axiosInstance.ts'
-import type {
-  Overview,
-  StatisticOverviewLastYear
-} from '@/types'
+import type { Overview, StatisticOverviewLastYear } from '@/types'
 
 export const GetYearStatisticOverview = async () => {
   const response = await axiosInstance.get<StatisticOverviewLastYear>('/statistics/year_overview')
