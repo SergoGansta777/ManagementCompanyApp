@@ -33,6 +33,7 @@ export default function Incidents() {
                 Аварии
               </h1>
             </div>
+          
           </div>
           <div className='w-full h-full'>
             <IncidentsTable incidentsDetails={data.incidents} />

@@ -17,7 +17,7 @@ const TableColumns = () => {
       ),
       cell: ({ row }) => {
         const building = (row.getValue('building') as Building)
-        const formattedAddress = `${building.address.region}, ул.${building.address.street}, дом ${building.number}`
+        const formattedAddress = `${building.address.region}, ${building.address.street}, дом №${building.number}`
         return (
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
