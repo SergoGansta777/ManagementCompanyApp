@@ -1,8 +1,8 @@
 import axiosInstance from '@/api/axiosInstance.ts'
-import type { IncidentDetailsList } from '@/types'
+import type { IncidentDetailList } from '@/types'
 
 export const GetAllIncidentsDetails = async () => {
-  const response = await axiosInstance.get<IncidentDetailsList>(
+  const response = await axiosInstance.get<IncidentDetailList>(
     '/incidents'
   )
   return response.data
