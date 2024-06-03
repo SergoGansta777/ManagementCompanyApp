@@ -1,6 +1,6 @@
 import {
   IconAlertTriangle,
-  IconLayoutDashboard,
+  IconLayoutDashboard, IconMoneybag,
   IconReport,
   IconUsers
 } from '@tabler/icons-react'
@@ -18,7 +18,7 @@ export interface SideLink extends NavLink {
 
 export const sidelinks: SideLink[] = [
   {
-    title: 'Dashboard',
+    title: 'Статистика',
     label: '',
     href: '/',
     icon: <IconLayoutDashboard size={18} />
@@ -40,5 +40,11 @@ export const sidelinks: SideLink[] = [
     label: '',
     href: '/repairs',
     icon: <IconReport size={18} />
+  },
+  {
+    title: 'Финансы',
+    label: '',
+    href: '/finances',
+    icon: <IconMoneybag size={18} />
   }
 ]

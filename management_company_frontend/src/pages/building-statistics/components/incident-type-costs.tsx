@@ -1,6 +1,6 @@
 import { Card, CardDescription, CardTitle } from '@/components/ui/card.tsx'
 import { ScrollArea } from '@/components/ui/scroll-area.tsx'
-import { type IncidentCost, rub_format } from '@/types'
+import { type IncidentCost, ruMoneyFormat } from '@/types'
 
 interface IncidentTypeCostsProps {
   incidentTypes: IncidentCost[]
@@ -18,7 +18,7 @@ export function IncidentTypeCosts({ incidentTypes }: IncidentTypeCostsProps) {
               {incidentType.incidentType}
             </CardTitle>
             <CardDescription>
-              {rub_format.format(incidentType.totalCost)}
+              {ruMoneyFormat.format(incidentType.totalCost)}
             </CardDescription>
           </Card>
         ))}

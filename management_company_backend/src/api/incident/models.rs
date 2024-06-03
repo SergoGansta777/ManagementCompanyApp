@@ -6,6 +6,7 @@ use uuid::Uuid;
 use crate::api::building::models::Building;
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct IncidentType {
     pub id: Uuid,
     pub name: String,
@@ -29,7 +30,7 @@ pub struct IncidentList {
 }
 
 #[derive(Debug, Deserialize, Serialize, Type)]
-#[sqlx(type_name = "incident_status", rename_all = "lowercase")]
+#[sqlx(type_name = "incident_status", rename_all = "camelCase")]
 pub enum IncidentStatus {
     Reported,
     #[sqlx(rename = "in_progress")]

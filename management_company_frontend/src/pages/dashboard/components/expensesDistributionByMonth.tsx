@@ -1,4 +1,4 @@
-import { type ExpenseDistributionByMonth, rub_format } from '@/types'
+import { type ExpenseDistributionByMonth, ruMoneyFormat } from '@/types'
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 interface ExpensesByMonthGraphicProps {
@@ -21,7 +21,7 @@ export function ExpensesDistributionByMonth({ data }: ExpensesByMonthGraphicProp
           fontSize={8}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => rub_format.format(value)}
+          tickFormatter={(value) => ruMoneyFormat.format(value)}
         />
         <Bar
           dataKey='total'

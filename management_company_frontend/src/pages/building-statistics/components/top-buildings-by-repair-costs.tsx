@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
-import { type BuildingRepairCost, rub_format } from '@/types'
+import { type BuildingRepairCost, ruMoneyFormat } from '@/types'
 import { IconHome } from '@tabler/icons-react'
 
 interface TopBuildingsByRepairCostsProps {
@@ -27,7 +27,7 @@ export function TopBuildingsByRepairCosts({ buildingRepairCosts }: TopBuildingsB
               - {buildingDetails.repairCount}</p>
           </div>
           <div
-            className='ml-auto text-lg font-medium'>{rub_format.format(buildingDetails.totalCost)}</div>
+            className='ml-auto text-lg font-medium'>{ruMoneyFormat.format(buildingDetails.totalCost)}</div>
         </div>
       ))}
     </div>

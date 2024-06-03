@@ -8,7 +8,9 @@ use uuid::Uuid;
 use crate::api::{extractor::AuthUser, ApiContext, Error};
 
 use super::{
-    models::{Employee, EmployeeBody, EmployeeDetails, EmployeeList, NewEmployee, UpdateEmployee},
+    models::{
+        Employee, EmployeeBody, EmployeeDetails, EmployeeDetailsList, NewEmployee, UpdateEmployee,
+    },
     utils::{insert_employee, insert_passport, position_exists},
 };
 
@@ -16,7 +18,7 @@ pub async fn add_employee(
     _: AuthUser,
     ctx: State<ApiContext>,
     Json(req): Json<EmployeeBody<NewEmployee>>,
-) -> Result<Json<EmployeeBody<Employee>>, Error> {
+) -> Result<Json<Employee>, Error> {
     if !position_exists(&ctx.db, req.employee.position_id).await? {
         return Err(Error::PositionNotFound);
     }
@@ -30,25 +32,23 @@ pub async fn add_employee(
 
     let employee_id = insert_employee(&ctx.db, &req.employee, passport_id).await?;
 
-    Ok(Json(EmployeeBody {
-        employee: Employee {
-            id: employee_id,
-            first_name: req.employee.first_name.clone(),
-            last_name: req.employee.last_name.clone(),
-            middle_name: req.employee.middle_name.clone(),
-            email: req.employee.email.clone(),
-            phone: req.employee.phone.clone(),
-            gender: req.employee.gender.clone(),
-            position_id: req.employee.position_id,
-            passport_id,
-        },
+    Ok(Json(Employee {
+        id: employee_id,
+        first_name: req.employee.first_name.clone(),
+        last_name: req.employee.last_name.clone(),
+        middle_name: req.employee.middle_name.clone(),
+        email: req.employee.email.clone(),
+        phone: req.employee.phone.clone(),
+        gender: req.employee.gender.clone(),
+        position_id: req.employee.position_id,
+        passport_id,
     }))
 }
 
 pub async fn get_all_employees(
     _: AuthUser,
     ctx: State<ApiContext>,
-) -> Result<Json<EmployeeList>, Error> {
+) -> Result<Json<EmployeeDetailsList>, Error> {
     let db_employees = query!(
         r#"
         SELECT
@@ -91,7 +91,7 @@ pub async fn get_all_employees(
         })
         .collect();
 
-    Ok(Json(EmployeeList { employees }))
+    Ok(Json(EmployeeDetailsList { employees }))
 }
 
 pub async fn get_employee(

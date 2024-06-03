@@ -21,10 +21,12 @@ import RepairPieChart
 import {
   TopBuildingsByRepairCosts
 } from '@/pages/building-statistics/components/top-buildings-by-repair-costs.tsx'
-import { rub_format } from '@/types'
+import { ruDateFormat, ruMoneyFormat } from '@/types'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import * as jsPDF from 'jspdf'
 import { ArrowUp, FireExtinguisherIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useReactToPrint } from 'react-to-print'
 
 function formatDate(date: Date) {
   const year = date.getFullYear()
@@ -47,6 +49,84 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['Overview'] })
     }
   }, [startDate, endDate, queryClient])
+  
+  const ReportComponent = React.forwardRef((props, ref) => (
+    // @ts-ignore
+    <div ref={ref} style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h1>Отчёт о ремонтах за период с {startDate} по {endDate}</h1>
+      <p>Общее количество инцидентов: {data?.totalIncidents}</p>
+      <p>Общая стоимость: {data?.totalCost.toLocaleString('ru-RU', {
+        style: 'currency',
+        currency: 'RUB'
+      })}</p>
+      <h2>Количество ремонтов</h2>
+      <ul>
+        <li>Аварийные ремонты: {data?.repairCounts.emergencyRepairs}</li>
+        <li>Плановые ремонты: {data?.repairCounts.scheduledRepairs}</li>
+        <li>Всего: {data?.repairCounts.total}</li>
+      </ul>
+      <h2>Стоимость инцидентов по типам</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'>
+        <thead>
+        <tr>
+          <th>Тип инцидента</th>
+          <th>Общая стоимость</th>
+        </tr>
+        </thead>
+        <tbody>
+        {data?.incidentCosts.map((incident, index) => (
+          <tr key={index}>
+            <td>{incident.incidentType}</td>
+            <td>{incident.totalCost.toLocaleString('ru-RU', {
+              style: 'currency',
+              currency: 'RUB'
+            })}</td>
+          </tr>
+        ))}
+        </tbody>
+      </table>
+      <h2>Топ зданий по стоимости ремонта</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'>
+        <thead>
+        <tr>
+          <th>Номер здания</th>
+          <th>Общая стоимость</th>
+          <th>Количество ремонтов</th>
+        </tr>
+        </thead>
+        <tbody>
+        {data?.topBuildingsByRepairCost.map((building, index) => (
+          <tr key={index}>
+            <td>{building.buildingNumber}</td>
+            <td>{building.totalCost.toLocaleString('ru-RU', {
+              style: 'currency',
+              currency: 'RUB'
+            })}</td>
+            <td>{building.repairCount}</td>
+          </tr>
+        ))}
+        </tbody>
+      </table>
+    </div>
+  ))
+  const componentRef = useRef()
+  
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: 'report',
+    onAfterPrint: () => handleGeneratePDF()
+  })
+  
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF()
+    doc.html(componentRef.current, {
+      callback: function(doc) {
+        doc.save('report.pdf')
+      },
+      x: 10,
+      y: 10
+    })
+  }
   
   return (
     <Layout>
@@ -74,6 +154,9 @@ export default function Dashboard() {
                   className='text-2xl lg:text-3xl font-bold tracking-tight'>
                   Статистика по авариям
                 </h1>
+                <div style={{ display: 'none' }}>
+                  <ReportComponent ref={componentRef} data={data} />
+                </div>
                 <div
                   className='flex flex-row items-center justify-between gap-4'>
                   <DateRangePicker
@@ -87,7 +170,9 @@ export default function Dashboard() {
                     locale='ru-RU'
                     showCompare={false}
                   />
-                  <Button>Скачать pdf-отчет</Button>
+                  <Button
+                    onClick={handlePrint}
+                  >Скачать pdf-отчет</Button>
                 </div>
               </div>
             </div>
@@ -175,7 +260,7 @@ export default function Dashboard() {
                     Аварий - {data.totalIncidents}
                   </CardDescription>
                   <span className='text-xl'>
-                    {rub_format.format(data.totalCost)}
+                    {ruMoneyFormat.format(data.totalCost)}
                   </span>
                 </CardContent>
               </Card>
@@ -183,10 +268,10 @@ export default function Dashboard() {
           </LayoutBody>
         )
       }
-    
     </Layout>
   )
 }
+
 
 const topNav = [
   {
