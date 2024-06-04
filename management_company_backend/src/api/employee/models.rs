@@ -8,6 +8,12 @@ pub struct EmployeeBody<T> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct EmployeeList {
+    pub employees: Vec<Employee>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EmployeeDetailsList {
     pub employees: Vec<EmployeeDetails>,
 }
@@ -54,7 +60,7 @@ pub struct UpdateEmployee {
     pub position_id: Option<Uuid>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Employee {
     pub id: Uuid,
