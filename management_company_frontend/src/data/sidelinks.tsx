@@ -1,6 +1,7 @@
 import {
   IconAlertTriangle,
-  IconLayoutDashboard, IconMoneybag,
+  IconLayoutDashboard,
+  IconMoneybag,
   IconReport,
   IconUsers
 } from '@tabler/icons-react'

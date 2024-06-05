@@ -26,10 +26,9 @@ export function DataTableToolbar<TData>({
       >
         <Input
           placeholder='Поиск по  адресу...'
-          value={(table.getColumn('building')?.getFilterValue() as string) ?? ''}
+          value={(table.getColumn('buildingAddress')?.getFilterValue() as string) ?? ''}
           onChange={(event) => {
-            console.log(table.getColumn('building'))
-            table.getColumn('building')?.setFilterValue(event.target.value)
+            table.getColumn('buildingAddress')?.setFilterValue(event.target.value)
           }
           }
           className='h-8 w-[150px] lg:w-[250px]'

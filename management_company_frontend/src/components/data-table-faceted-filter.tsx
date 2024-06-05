@@ -19,15 +19,13 @@ import { Separator } from '@/components/ui/separator.tsx'
 import { cn } from '@/lib/utils.ts'
 import { CheckIcon, PlusCircledIcon } from '@radix-ui/react-icons'
 import type { Column } from '@tanstack/react-table'
-import type * as React from 'react'
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>;
   title?: string;
   options: {
     label: string;
-    id: number;
-    icon?: React.ComponentType<{ className?: string }>;
+    id: string;
   }[];
 }
 
@@ -37,7 +35,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                                                         options
                                                       }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues()
-  const selectedValues = new Set(column?.getFilterValue() as number[])
+  const selectedValues = new Set(column?.getFilterValue() as string[])
   
   return (
     <Popover>
@@ -60,7 +58,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     variant='secondary'
                     className='rounded-sm px-1 font-normal'
                   >
-                    {selectedValues.size} selected
+                    {selectedValues.size} Выбрано
                   </Badge>
                 ) : (
                   options
@@ -113,10 +111,6 @@ export function DataTableFacetedFilter<TData, TValue>({
                     >
                       <CheckIcon className={cn('h-4 w-4')} />
                     </div>
-                    {option.icon && (
-                      <option.icon
-                        className='mr-2 h-4 w-4 text-muted-foreground' />
-                    )}
                     <span>{option.label}</span>
                     {facets?.get(option.id) && (
                       <span

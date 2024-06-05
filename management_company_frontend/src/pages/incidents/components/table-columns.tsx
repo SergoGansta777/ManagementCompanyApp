@@ -1,32 +1,27 @@
 import {
-  type Building,
-  type IncidentDetails, type IncidentType, ruDateFormat
-} from '@/types/index.ts'
-import type { ColumnDef } from '@tanstack/react-table'
-import {
   DataTableColumnHeader
 } from '@/components/data-table-column-header.tsx'
+import { type IncidentDetails, ruDateFormat } from '@/types/index.ts'
+import type { ColumnDef } from '@tanstack/react-table'
 
 const TableColumns = () => {
   return [
     {
-      accessorKey: 'building',
+      accessorKey: 'buildingAddress',
       meta: 'Адрес',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title='Адрес' />
       ),
       cell: ({ row }) => {
-        const building = (row.getValue('building') as Building)
-        const formattedAddress = `${building.address.region}, ${building.address.street}, дом №${building.number}`
         return (
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-        {formattedAddress}
+        {row.getValue('buildingAddress')}
       </span>
         )
       }
     }, {
-      accessorKey: 'incidentType',
+      accessorKey: 'incidentTypeName',
       meta: 'Тип инцидента',
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title='Тип инцидента' />
@@ -35,7 +30,7 @@ const TableColumns = () => {
         return (
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-						{(row.getValue('incidentType') as IncidentType).name}
+						{row.getValue('incidentTypeName')}
 					</span>
         )
       }

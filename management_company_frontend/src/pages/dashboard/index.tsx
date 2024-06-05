@@ -12,13 +12,17 @@ import {
 import { Layout, LayoutBody, LayoutHeader } from '@/components/ui/layout'
 import Loader from '@/components/ui/loader.tsx'
 import { UserNav } from '@/components/user-nav'
+import { ruMoneyFormat } from '@/types'
 import { useQuery } from '@tanstack/react-query'
+import jsPDF from 'jspdf'
 import {
   ActivityIcon,
   PersonStandingIcon,
   RussianRubleIcon,
   WrenchIcon
 } from 'lucide-react'
+import React, { useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
 import {
   ExpensesDistributionByMonth
 } from './components/expensesDistributionByMonth.tsx'
@@ -26,11 +30,88 @@ import {
   TopFrequentIncidentTypes
 } from './components/top-frequent-incident-types.tsx'
 
+
 export default function Dashboard() {
   const { data, isSuccess } = useQuery({
     queryKey: ['year_statistic_overview'],
     queryFn: GetYearStatisticOverview
   })
+  
+  const ReportComponent = React.forwardRef((props, ref) => (
+    // @ts-ignore
+    <div ref={ref} className='px-14 py-10'>
+      <h1 className='text-2xl text-center mx-auto mb-1 font-semibold'>Годовой
+        отчет</h1>
+      <p className='text-xl mx-auto text-center mb-3'>За период с января по
+        декабрь</p>
+      <div className='my-3'>
+        <div className='space-y-1 py-1 mb-2'>
+          <p className='text-left'>Общие
+            расходы: {data?.totalExpensesLastYear}</p>
+          <p className='text-left'>Общее количество
+            инцидентов: {data?.totalIncidentsLastYear}</p>
+        </div>
+      </div>
+      <h2 className='text-xl py-3 text-left font-semibold'>Наиболее частые виды
+        аварий</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'
+             className='w-full mx-auto px-5 py-4 mb-20'>
+        <thead>
+        <tr className='grid grid-cols-5'>
+          <th className='col-span-3 text-left'>Тип инцидента</th>
+          <th className='col-span-2 text-left'>Количество</th>
+        </tr>
+        </thead>
+        <tbody>
+        {data?.top5IncidentTypesLastYear.map((incident, index) => (
+          <tr key={index} className='grid grid-cols-5'>
+            <td className='col-span-3'>{incident.name}</td>
+            <td className='col-span-2'>{incident.count}</td>
+          </tr>
+        ))}
+        </tbody>
+      </table>
+      <h2 className='text-xl py-3 text-left font-semibold'>Распределение
+        расходов
+        по месяцам</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'
+             className='w-full mx-auto px-5 py-4 mb-20'>
+        <thead>
+        </thead>
+        <tbody
+          className='flex items-start justify-between gap-1 flex-col'
+        >
+        {data?.expenseDistributionByMonthLastYear.map((month, index) => (
+          <tr className='flex items-start justify-between gap-4'>
+            <td key={index}>{month.name}</td>
+            <td key={index}>{ruMoneyFormat.format(month.total)}</td>
+          </tr>
+        ))}
+        </tbody>
+      </table>
+    </div>
+  ))
+  
+  
+  const componentRef = useRef()
+  
+  const handlePrint = useReactToPrint({
+    content: () => componentRef.current,
+    documentTitle: 'yearly_report',
+    onAfterPrint: () => handleGeneratePDF()
+  })
+  
+  const handleGeneratePDF = () => {
+    const doc = new jsPDF()
+    doc.html(componentRef.current, {
+      callback: function(doc) {
+        doc.save('yearly_report.pdf')
+      },
+      x: 10,
+      y: 10
+    })
+  }
+  
   
   return (
     <Layout>
@@ -53,7 +134,10 @@ export default function Dashboard() {
               <h1 className='text-2xl lg:text-3xl font-bold tracking-tight'>
                 Общие показатели
               </h1>
-              <Button>Скачать pdf-отчет</Button>
+              <div style={{ display: 'none' }}>
+                <ReportComponent ref={componentRef} data={data} />
+              </div>
+              <Button onClick={handlePrint}>Скачать pdf-отчет</Button>
             </div>
           </div>
           <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>

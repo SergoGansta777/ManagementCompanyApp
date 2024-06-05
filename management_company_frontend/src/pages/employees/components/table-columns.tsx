@@ -122,8 +122,12 @@ const TableColumns = () => {
 						{formatted_gender}
 					</span>
         )
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
       }
     },
+    
     {
       accessorKey: 'positionName',
       meta: 'Должность',
@@ -137,6 +141,9 @@ const TableColumns = () => {
 					{row.getValue('positionName')}
 				</span>
         )
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
       }
     },
     {

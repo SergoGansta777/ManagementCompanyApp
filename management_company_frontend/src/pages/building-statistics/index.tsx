@@ -52,57 +52,84 @@ export default function Dashboard() {
   
   const ReportComponent = React.forwardRef((props, ref) => (
     // @ts-ignore
-    <div ref={ref} style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>Отчёт о ремонтах за период с {startDate} по {endDate}</h1>
-      <p>Общее количество инцидентов: {data?.totalIncidents}</p>
-      <p>Общая стоимость: {data?.totalCost.toLocaleString('ru-RU', {
-        style: 'currency',
-        currency: 'RUB'
-      })}</p>
-      <h2>Количество ремонтов</h2>
-      <ul>
-        <li>Аварийные ремонты: {data?.repairCounts.emergencyRepairs}</li>
-        <li>Плановые ремонты: {data?.repairCounts.scheduledRepairs}</li>
-        <li>Всего: {data?.repairCounts.total}</li>
-      </ul>
-      <h2>Стоимость инцидентов по типам</h2>
-      <table border={1} cellPadding='5' cellSpacing='0'>
-        <thead>
-        <tr>
-          <th>Тип инцидента</th>
-          <th>Общая стоимость</th>
-        </tr>
-        </thead>
-        <tbody>
-        {data?.incidentCosts.map((incident, index) => (
-          <tr key={index}>
-            <td>{incident.incidentType}</td>
-            <td>{incident.totalCost.toLocaleString('ru-RU', {
+    <div ref={ref} className='px-14 py-10'>
+      <h1 className='text-2xl text-center mx-auto mb-1 font-semibold'>Отчёт о
+        ремонтах </h1>
+      <p className='text-xl mx-auto text-center mb-3'>За
+        период
+        с{' '}
+        <span
+          className='text-lg font-semibold'>
+          {ruDateFormat.format(new Date(startDate))}</span>
+        {' '}по{' '}
+        <span
+          className='text-lg font-semibold'>
+        {ruDateFormat.format(new Date(endDate))}
+        </span>
+        {' '}
+        включительно</p>
+      <div className='my-3'>
+        <div className='space-y-1 py-1 mb-2'>
+          <p className='text-left'>Общее количество
+            инцидентов: {data?.totalIncidents}</p>
+          <p className='text-left'>Общая
+            стоимость: {data?.totalCost.toLocaleString('ru-RU', {
               style: 'currency',
               currency: 'RUB'
-            })}</td>
+            })}</p>
+        </div>
+        <ul
+          className='flex flex-col gap-1 items-start justify-between py-1 mb-4'>
+          <li>Количество аварийных
+            ремонтов: {data?.repairCounts.emergencyRepairs}</li>
+          <li>Количество плановых
+            ремонтов: {data?.repairCounts.scheduledRepairs}</li>
+          <li>Всего: {data?.repairCounts.total}</li>
+        </ul>
+      </div>
+      <h2 className='text-xl py-3 px-5 text-left  font-semibold'>Стоимость
+        инцидентов по
+        типам</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'
+             className='w-full mx-auto px-5 py-4 mb-20'
+      >
+        <thead className='w-full mx-auto'>
+        <tr className='grid grid-cols-5'>
+          <th className='col-span-3 text-left'>Тип инцидента</th>
+          <th className='col-span-2 text-left'>Общая стоимость</th>
+        </tr>
+        </thead>
+        <tbody className='w-full mx-auto'>
+        {data?.incidentCosts.map((incident, index) => (
+          <tr key={index} className='grid-cols-5 grid'>
+            <td className='col-span-3'>{incident.incidentType}</td>
+            <td
+              className='col-span-2'>{ruMoneyFormat.format(incident.totalCost)}</td>
           </tr>
         ))}
         </tbody>
       </table>
-      <h2>Топ зданий по стоимости ремонта</h2>
-      <table border={1} cellPadding='5' cellSpacing='0'>
+      
+      <h2
+        className='text-xl py-3 text-left font-semibold'
+      >Перечень зданий с самыми большими затратами на ремонт</h2>
+      <table border={1} cellPadding='5' cellSpacing='0'
+             className='w-full mx-auto px-5 py-4 mb-20'
+      >
         <thead>
-        <tr>
-          <th>Номер здания</th>
-          <th>Общая стоимость</th>
-          <th>Количество ремонтов</th>
+        <tr className='w-full grid grid-cols-5'>
+          <th className='col-span-1'>Номер здания</th>
+          <th className='cols-span-3'>Общая стоимость</th>
+          <th className='cols-span-1'>Количество ремонтов</th>
         </tr>
         </thead>
         <tbody>
         {data?.topBuildingsByRepairCost.map((building, index) => (
-          <tr key={index}>
-            <td>{building.buildingNumber}</td>
-            <td>{building.totalCost.toLocaleString('ru-RU', {
-              style: 'currency',
-              currency: 'RUB'
-            })}</td>
-            <td>{building.repairCount}</td>
+          <tr key={index} className='grid grid-cols-5'>
+            <td className='col-span-1'>{building.buildingNumber}</td>
+            <td
+              className='cols-span-3'>{ruMoneyFormat.format(building.totalCost)}</td>
+            <td className='col-span-1'>{building.repairCount}</td>
           </tr>
         ))}
         </tbody>

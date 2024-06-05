@@ -7,6 +7,8 @@ import {
   TableRow
 } from '@/components/ui/table.tsx'
 import {
+  type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -14,20 +16,14 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type ColumnFiltersState,
   type SortingState,
+  useReactTable,
   type VisibilityState
 } from '@tanstack/react-table'
 import * as React from 'react'
 
-import {
-  DataTablePagination
-} from './data-table-pagination.tsx'
-import {
-  DataTableToolbar
-} from './data-table-toolbar.tsx'
+import { DataTablePagination } from './data-table-pagination.tsx'
+import { DataTableToolbar } from './data-table-toolbar.tsx'
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
