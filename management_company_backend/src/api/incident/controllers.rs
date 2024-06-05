@@ -2,12 +2,7 @@ use axum::{extract::State, Json};
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::api::{
-    building::models::{Address, Building},
-    extractor::AuthUser,
-    incident::models::IncidentStatus,
-    ApiContext, Error,
-};
+use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
 
 use super::models::{
     Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList, NewIncident,

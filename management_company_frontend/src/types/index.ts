@@ -139,6 +139,9 @@ export const IncidentTypeSchema = z.object({
 })
 
 export type IncidentType = z.infer<typeof IncidentTypeSchema>
+export type IncidentTypesList = {
+  incidentTypes: IncidentType[]
+}
 
 export const IncidentDetailsSchema = z.object({
   id: z.string().uuid(),

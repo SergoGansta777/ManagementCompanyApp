@@ -33,6 +33,9 @@ const TableColumns = () => {
 						{row.getValue('incidentTypeName')}
 					</span>
         )
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
       }
     },
     {
@@ -63,6 +66,9 @@ const TableColumns = () => {
 						{row.getValue('status')}
 					</span>
         )
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
       }
     },
     {
