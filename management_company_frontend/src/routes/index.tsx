@@ -56,6 +56,13 @@ const router = createBrowserRouter([
         lazy: async () => ({
           Component: (await import('../pages/incidents')).default
         })
+      },
+      {
+        path: '/repairs',
+        index: true,
+        lazy: async () => ({
+          Component: (await import('../pages/repairs')).default
+        })
       }
     ]
   },

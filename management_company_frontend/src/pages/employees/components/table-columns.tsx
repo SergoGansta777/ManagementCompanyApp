@@ -3,7 +3,7 @@ import type { EmployeeDetails } from '@/types/index.ts'
 import type { ColumnDef } from '@tanstack/react-table'
 import {
   DataTableColumnHeader
-} from '../../../components/data-table-column-header.tsx'
+} from '@/components/data-table-column-header.tsx'
 import { DataTableRowActions } from './data-table-row-actions.tsx'
 
 const TableColumns = () => {
@@ -33,21 +33,6 @@ const TableColumns = () => {
       enableHiding: false
     },
     {
-      accessorKey: 'firstName',
-      meta: 'Имя',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Имя' />
-      ),
-      cell: ({ row }) => {
-        return (
-          <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-						{row.getValue('firstName')}
-					</span>
-        )
-      }
-    },
-    {
       accessorKey: 'lastName',
       meta: 'Фамилия',
       header: ({ column }) => (
@@ -58,6 +43,21 @@ const TableColumns = () => {
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
 						{row.getValue('lastName')}
+					</span>
+        )
+      }
+    },
+    {
+      accessorKey: 'firstName',
+      meta: 'Имя',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Имя' />
+      ),
+      cell: ({ row }) => {
+        return (
+          <span
+            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+						{row.getValue('firstName')}
 					</span>
         )
       }

@@ -143,6 +143,22 @@ export type IncidentTypesList = {
   incidentTypes: IncidentType[]
 }
 
+export const RepairSchema = z.object({
+  id: z.string().uuid(),
+  startedAt: z.string().datetime(),
+  endedAt: z.string().datetime().optional(),
+  repairType: z.string(),
+  status: z.string(),
+  description: z.string(),
+  buildingAddress: z.string()
+})
+export type Repair = z.infer<typeof RepairSchema>;
+
+export const RepairListSchema = z.object({
+  repairs: z.array(RepairSchema)
+})
+export type RepairList = z.infer<typeof RepairListSchema>;
+
 export const IncidentDetailsSchema = z.object({
   id: z.string().uuid(),
   buildingAddress: z.string(),
