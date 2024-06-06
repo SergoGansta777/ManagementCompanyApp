@@ -1,7 +1,7 @@
 import {
   DataTableColumnHeader
 } from '@/components/data-table-column-header.tsx'
-import { type IncidentDetails, ruDateFormat } from '@/types/index.ts'
+import { type Repair, ruDateFormat } from '@/types/index.ts'
 import type { ColumnDef } from '@tanstack/react-table'
 
 const TableColumns = () => {
@@ -15,22 +15,23 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem] translate-y-[2px]'>
         {row.getValue('buildingAddress')}
       </span>
         )
       }
-    }, {
-      accessorKey: 'incidentTypeName',
-      meta: 'Тип инцидента',
+    },
+    {
+      accessorKey: 'repairType',
+      meta: 'Тип ремонта',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Тип инцидента' />
+        <DataTableColumnHeader column={column} title='Тип ремонта' />
       ),
       cell: ({ row }) => {
         return (
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-						{row.getValue('incidentTypeName')}
+						{row.getValue('repairType')}
 					</span>
         )
       },
@@ -39,16 +40,31 @@ const TableColumns = () => {
       }
     },
     {
-      accessorKey: 'reportedAt',
-      meta: 'Дата обращения',
+      accessorKey: 'startedAt',
+      meta: 'Дата начала',
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title='Дата обращения' />
+        <DataTableColumnHeader column={column} title='Дата начала' />
       ),
       cell: ({ row }) => {
         return (
           <span
             className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
-						{ruDateFormat.format(new Date(row.getValue('reportedAt')))}
+						{ruDateFormat.format(new Date(row.getValue('startedAt')))}
+					</span>
+        )
+      }
+    },
+    {
+      accessorKey: 'endedAt',
+      meta: 'Дата конца',
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title='Дата конца' />
+      ),
+      cell: ({ row }) => {
+        return (
+          <span
+            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+						{ruDateFormat.format(new Date(row.getValue('endedAt')))}
 					</span>
         )
       }
@@ -86,6 +102,6 @@ const TableColumns = () => {
         )
       }
     }
-  ] as ColumnDef<IncidentDetails>[]
+  ] as ColumnDef<Repair>[]
 }
 export default TableColumns

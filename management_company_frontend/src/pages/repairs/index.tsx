@@ -1,15 +1,15 @@
-import { GetAllIncidentsDetails } from '@/api/incidentsApi.ts'
+import { GetAllRepairs } from '@/api/repairApi.ts'
 import ThemeSwitch from '@/components/theme-switch'
 import { Layout, LayoutBody, LayoutHeader } from '@/components/ui/layout'
 import Loader from '@/components/ui/loader.tsx'
 import { UserNav } from '@/components/user-nav'
 import { useQuery } from '@tanstack/react-query'
-import IncidentsTable from './components/incident-table.tsx'
+import RepairTable from './components/repair-table.tsx'
 
-export default function Incidents() {
+export default function Repairs() {
   const { data, isSuccess } = useQuery({
-    queryKey: ['AllIncidentsDetails'],
-    queryFn: GetAllIncidentsDetails
+    queryKey: ['AllRepairs'],
+    queryFn: GetAllRepairs
   })
   
   return (
@@ -30,13 +30,13 @@ export default function Incidents() {
           <div className='flex items-center justify-end space-y-2'>
             <div className='flex items-center justify-between w-full space-x-3'>
               <h1 className='text-2xl lg:text-3xl font-bold tracking-tight'>
-                Аварии
+                Ремонты
               </h1>
             </div>
           
           </div>
           <div className='w-full h-full'>
-            <IncidentsTable incidentsDetails={data.incidents} />
+            <RepairTable repairs={data.repairs} />
           </div>
         </LayoutBody>
       )}

@@ -1,4 +1,3 @@
-import { getAllIncidentsTypes } from '@/api/incidentsApi.ts'
 import {
   DataTableFacetedFilter
 } from '@/components/data-table-faceted-filter.tsx'
@@ -6,7 +5,6 @@ import { DataTableViewOptions } from '@/components/data-table-view-options.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Input } from '@/components/ui/input.tsx'
 import { Cross2Icon } from '@radix-ui/react-icons'
-import { useQuery } from '@tanstack/react-query'
 import type { Table } from '@tanstack/react-table'
 import { Download } from 'lucide-react'
 import { CSVLink } from 'react-csv'
@@ -22,18 +20,6 @@ export function DataTableToolbar<TData>({
                                           dataToExport
                                         }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0
-  
-  const incidentTypesQuery = useQuery({
-    queryKey: ['incidentTypes'],
-    queryFn: getAllIncidentsTypes
-  })
-  const incidentTypesOptions = incidentTypesQuery.data?.incidentTypes.map((incident) => {
-    return {
-      label: incident.name,
-      id: incident.name
-    }
-  })
-  
   
   return (
     <div className='flex items-center justify-between'>
@@ -51,11 +37,20 @@ export function DataTableToolbar<TData>({
           className='h-8 w-[150px] lg:w-[250px]'
         />
         <div className='flex gap-x-2'>
-          {table.getColumn('incidentTypeName') && (
+          {table.getColumn('repairType') && (
             <DataTableFacetedFilter
-              column={table.getColumn('incidentTypeName')}
-              title='Тип инцидента'
-              options={incidentTypesOptions !== undefined ? incidentTypesOptions : []}
+              column={table.getColumn('repairType')}
+              title='Вид ремонта'
+              options={[
+                {
+                  id: 'Плановый',
+                  label: 'Плановый'
+                },
+                {
+                  id: 'Аварийный',
+                  label: 'Аварийный'
+                }
+              ]}
             />
           )}
         </div>
@@ -103,7 +98,7 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <div className='flex justify-between items-center gap-2'>
-        <CSVLink data={dataToExport as Data} filename='incidents.csv'>
+        <CSVLink data={dataToExport as Data} filename='repairs.csv'>
           <Button variant='secondary' className='h-8 px-2 lg:px-3 '>
             <Download className='px-1' />
             Экспорт

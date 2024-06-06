@@ -2,12 +2,7 @@ use axum::{extract::State, Json};
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::api::{
-    building::models::{Address, Building},
-    extractor::AuthUser,
-    incident::models::IncidentStatus,
-    ApiContext, Error,
-};
+use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
 
 use super::models::{
     Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList, NewIncident,
@@ -25,7 +20,6 @@ pub async fn get_all_incidents(
             i.resolved_at,
             i.status as "status: IncidentStatus",
             i.description,
-            it.id AS "incident_type_id: Uuid",
             it.name AS "incident_type_name: String",
             b.id AS "building_id: Uuid",
             b.number AS "building_number: i32",
@@ -54,24 +48,16 @@ pub async fn get_all_incidents(
             id: incident.id,
             reported_at: incident.reported_at.unwrap_or_default(),
             resolved_at: incident.resolved_at,
-            status: incident.status,
+            status: incident.status.to_string(),
             description: incident.description,
-            incident_type: IncidentType {
-                id: incident.incident_type_id,
-                name: incident.incident_type_name,
-            },
-            building: Building {
-                id: incident.building_id,
-                number: incident.building_number,
-                number_of_floors: incident.building_number_of_floors,
-                constructed_date: incident.construction_date,
-                address: Address {
-                    country: incident.address_country,
-                    region: incident.address_region,
-                    city: incident.address_city,
-                    street: incident.address_street,
-                },
-            },
+            incident_type_name: incident.incident_type_name,
+            building_address: format!(
+                "{}, {}, {}, дом {}",
+                incident.address_region,
+                incident.address_city,
+                incident.address_street,
+                incident.building_number
+            ),
         })
         .collect();
 

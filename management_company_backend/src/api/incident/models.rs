@@ -3,8 +3,6 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::Type;
 use uuid::Uuid;
 
-use crate::api::building::models::Building;
-
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct IncidentType {
@@ -16,12 +14,12 @@ pub struct IncidentType {
 #[serde(rename_all = "camelCase")]
 pub struct IncidentDetails {
     pub id: Uuid,
-    pub building: Building,
+    pub building_address: String,
     pub reported_at: DateTime<Utc>,
     pub resolved_at: Option<DateTime<Utc>>,
-    pub status: IncidentStatus,
+    pub status: String,
     pub description: Option<String>,
-    pub incident_type: IncidentType,
+    pub incident_type_name: String,
 }
 
 #[derive(Serialize)]
@@ -38,6 +36,18 @@ pub enum IncidentStatus {
     Resolved,
     Closed,
     Cancelled,
+}
+
+impl IncidentStatus {
+    pub fn to_string(&self) -> String {
+        match self {
+            Self::Closed => "Закрыто".to_string(),
+            Self::Cancelled => "Отменено".to_string(),
+            Self::InProgress => "В процессе ремонта".to_string(),
+            Self::Reported => "Обработка заявки".to_string(),
+            Self::Resolved => "Исправлено".to_string(),
+        }
+    }
 }
 
 #[derive(Deserialize)]

@@ -11,6 +11,70 @@ export const ruDateFormat = new Intl.DateTimeFormat('ru-RU', {
   month: 'long',
   day: 'numeric'
 })
+export const NewEmployeeSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  middleName: z.string().optional(),
+  email: z.string().email(),
+  phone: z.string().min(1),
+  gender: z.string().min(1),
+  positionId: z.string().uuid(),
+  passportSeries: z.number().min(4).max(4),
+  passportNumber: z.number().min(6).max(6)
+})
+
+export type NewEmployee = z.infer<typeof NewEmployeeSchema>
+
+export const PositionAtWorkSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  salary: z.number()
+})
+
+export type PositionAtWork = z.infer<typeof PositionAtWorkSchema>
+
+export interface PositionsList {
+  positions: PositionAtWork[]
+}
+
+export const UpdateEmployeeSchema = z.object({
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  gender: z.string().optional(),
+  positionId: z.string().uuid().optional()
+})
+
+export type UpdateEmployee = z.infer<typeof UpdateEmployeeSchema>
+
+export const UpdateEmployeeWrapperSchema = z.object({
+  id: z.string().uuid(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  gender: z.string().optional(),
+  positionId: z.string().uuid().optional()
+})
+
+export type UpdateWrapperEmployee = z.infer<typeof UpdateEmployeeWrapperSchema>
+
+export const EmployeeSchema = z.object({
+  id: z.string().uuid(),
+  firstName: z.string(),
+  lastName: z.string(),
+  middleName: z.string().optional(),
+  email: z.string().email(),
+  phone: z.string(),
+  gender: z.string(),
+  positionId: z.string().uuid(),
+  passportId: z.string().uuid()
+})
+
+export type Employee = z.infer<typeof EmployeeSchema>
 
 export const EmployeeDetailsSchema = z.object({
   id: z.string().uuid(),
@@ -28,56 +92,27 @@ export const EmployeeDetailsSchema = z.object({
 
 export type EmployeeDetails = z.infer<typeof EmployeeDetailsSchema>
 
-export const EmployeeListSchema = z.object({
+export const EmployeeDetailsListSchema = z.object({
   employees: z.array(EmployeeDetailsSchema)
 })
 
-export type EmployeeDetailsList = z.infer<typeof EmployeeListSchema>
+export type EmployeeDetailsList = z.infer<typeof EmployeeDetailsListSchema>
 
-export const NewEmployeeSchema = z.object({
-  firstName: z.string(),
-  lastName: z.string(),
-  middleName: z.string().optional(),
-  email: z.string().email(),
-  phone: z.string(),
-  gender: z.string(),
-  positionId: z.string().uuid(),
-  passportSeries: z.number(),
-  passportNumber: z.number()
+export const EmployeeListSchema = z.object({
+  employees: z.array(EmployeeSchema)
 })
 
-export type NewEmployee = z.infer<typeof NewEmployeeSchema>
+export type EmployeeList = z.infer<typeof EmployeeListSchema>
 
-export const UpdateEmployeeSchema = z.object({
-  id: z.string(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  middleName: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  gender: z.string().optional(),
-  positionId: z.string().uuid().optional()
-})
+export const IncidentStatusSchema = z.enum([
+  'Reported',
+  'InProgress',
+  'Resolved',
+  'Closed',
+  'Cancelled'
+])
 
-export type UpdateEmployee = z.infer<typeof UpdateEmployeeSchema>
-
-export const EmployeeSchema = z.object({
-  id: z.string().uuid(),
-  firstName: z.string(),
-  lastName: z.string(),
-  middleName: z.string().optional(),
-  email: z.string().email(),
-  phone: z.string(),
-  gender: z.string(),
-  positionId: z.string().uuid(),
-  passportId: z.string().uuid()
-})
-
-export type Employee = z.infer<typeof EmployeeSchema>
-
-export const IncidentStatusSchema = z.enum(['Reported', 'InProgress', 'Resolved', 'Closed', 'Cancelled'])
-
-export type IncidentStatus = z.infer<typeof IncidentStatusSchema>;
+export type IncidentStatus = z.infer<typeof IncidentStatusSchema>
 
 export const AddressSchema = z.object({
   country: z.string(),
@@ -86,42 +121,65 @@ export const AddressSchema = z.object({
   street: z.string()
 })
 
-export type Address = z.infer<typeof AddressSchema>;
+export type Address = z.infer<typeof AddressSchema>
 
 export const BuildingSchema = z.object({
   id: z.string().uuid(),
   number: z.number().int(),
   numberOfFloors: z.number().int(),
   address: AddressSchema,
-  constructedDate: z.string().transform((str) => new Date(str)) // NaiveDate parsing
+  constructedDate: z.string().transform(str => new Date(str)) // NaiveDate parsing
 })
 
-export type Building = z.infer<typeof BuildingSchema>;
+export type Building = z.infer<typeof BuildingSchema>
 
 export const IncidentTypeSchema = z.object({
   id: z.string().uuid(),
   name: z.string()
 })
 
-export type IncidentType = z.infer<typeof IncidentTypeSchema>;
+export type IncidentType = z.infer<typeof IncidentTypeSchema>
+export type IncidentTypesList = {
+  incidentTypes: IncidentType[]
+}
+
+export const RepairSchema = z.object({
+  id: z.string().uuid(),
+  startedAt: z.string().datetime(),
+  endedAt: z.string().datetime().optional(),
+  repairType: z.string(),
+  status: z.string(),
+  description: z.string(),
+  buildingAddress: z.string()
+})
+export type Repair = z.infer<typeof RepairSchema>;
+
+export const RepairListSchema = z.object({
+  repairs: z.array(RepairSchema)
+})
+export type RepairList = z.infer<typeof RepairListSchema>;
 
 export const IncidentDetailsSchema = z.object({
   id: z.string().uuid(),
-  building: BuildingSchema,
-  reportedAt: z.string().transform((str) => new Date(str)), // Date parsing
-  resolvedAt: z.string().nullable().transform((str) => str ? new Date(str) : null).optional(),
-  status: IncidentStatusSchema,
+  buildingAddress: z.string(),
+  reportedAt: z.string().transform(str => new Date(str)), // Date parsing
+  resolvedAt: z
+    .string()
+    .nullable()
+    .transform(str => (str ? new Date(str) : null))
+    .optional(),
+  status: z.string(),
   description: z.string().nullable().optional(),
-  incidentType: IncidentTypeSchema
+  incidentTypeName: z.string()
 })
 
-export type IncidentDetails = z.infer<typeof IncidentDetailsSchema>;
+export type IncidentDetails = z.infer<typeof IncidentDetailsSchema>
 
 export const IncidentListSchema = z.object({
   incidents: z.array(IncidentDetailsSchema)
 })
 
-export type IncidentDetailList = z.infer<typeof IncidentListSchema>;
+export type IncidentDetailList = z.infer<typeof IncidentListSchema>
 
 export interface IUserResponse {
   token: string

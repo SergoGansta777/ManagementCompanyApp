@@ -15,18 +15,24 @@ pub async fn get_all_repairs(
             r.id,
             r.started_at,
             r.ended_at,
-            r.type AS "repair_type: RepairType",
+            r.type::text AS "repair_type:RepairType",
             i.id AS incident_id,
-            i.building_id,
             i.reported_at,
             i.resolved_at,
             i.status as "status: IncidentStatus",
             i.description,
-            i.incident_type_id
+            b.number as building_number,
+            a.region,
+            a.city,
+            a.street
         FROM
             repair r
         LEFT JOIN
             incident i ON r.incident_id = i.id
+        INNER JOIN
+            building b ON r.building_id = b.id
+        INNER JOIN
+            address a ON b.address_id = a.id
         "#
     )
     .fetch_all(&ctx.db)
@@ -38,8 +44,16 @@ pub async fn get_all_repairs(
             id: row.id,
             started_at: row.started_at.unwrap(),
             ended_at: row.ended_at,
-            repair_type: row.repair_type,
-            incident_id: row.incident_id,
+            repair_type: row.repair_type.unwrap().to_string(),
+            status: row.status.to_string(),
+            description: row.description.unwrap(),
+            building_address: format!(
+                "{}, {}, {}, дом {}",
+                row.region.unwrap(),
+                row.city.unwrap(),
+                row.street.unwrap(),
+                row.building_number
+            ),
         })
         .collect();
 
