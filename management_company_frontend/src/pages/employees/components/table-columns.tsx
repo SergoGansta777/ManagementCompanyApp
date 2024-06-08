@@ -1,9 +1,9 @@
-import { Checkbox } from '@/components/ui/checkbox.tsx'
-import type { EmployeeDetails } from '@/types/index.ts'
-import type { ColumnDef } from '@tanstack/react-table'
 import {
   DataTableColumnHeader
 } from '@/components/data-table-column-header.tsx'
+import { Checkbox } from '@/components/ui/checkbox.tsx'
+import type { EmployeeDetails } from '@/types/index.ts'
+import type { ColumnDef } from '@tanstack/react-table'
 import { DataTableRowActions } from './data-table-row-actions.tsx'
 
 const TableColumns = () => {
