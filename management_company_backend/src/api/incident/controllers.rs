@@ -1,8 +1,16 @@
-use axum::{extract::State, Json};
+use axum::{
+    extract::{Query, State},
+    Json,
+};
 use sqlx::query;
 use uuid::Uuid;
 
-use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
+use crate::api::{
+    extractor::AuthUser,
+    incident::models::IncidentStatus,
+    shared::{helpers::naive_date_to_utc_datetime, models::QueryTimeDiapasonParams},
+    ApiContext, Error,
+};
 
 use super::models::{
     Incident, IncidentDetails, IncidentList, IncidentType, IncidentTypeList, NewIncident,
@@ -11,7 +19,11 @@ use super::models::{
 pub async fn get_all_incidents(
     _: AuthUser,
     ctx: State<ApiContext>,
+    Query(params): Query<QueryTimeDiapasonParams>,
 ) -> Result<Json<IncidentList>, Error> {
+    let start_date = naive_date_to_utc_datetime(params.start_date);
+    let end_date = naive_date_to_utc_datetime(params.end_date);
+
     let db_incidents = query!(
         r#"
         SELECT
@@ -37,7 +49,11 @@ pub async fn get_all_incidents(
             building b ON i.building_id = b.id
         JOIN
             address a ON b.address_id = a.id
-        "#
+        WHERE
+            i.reported_at BETWEEN $1 AND $2
+        "#,
+        start_date,
+        end_date
     )
     .fetch_all(&ctx.db)
     .await?;

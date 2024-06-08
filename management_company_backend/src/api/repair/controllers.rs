@@ -1,14 +1,26 @@
-use axum::{extract::State, Json};
+use axum::{
+    extract::{Query, State},
+    Json,
+};
 use sqlx::query;
 
-use crate::api::{extractor::AuthUser, incident::models::IncidentStatus, ApiContext, Error};
+use crate::api::{
+    extractor::AuthUser,
+    incident::models::IncidentStatus,
+    shared::{helpers::naive_date_to_utc_datetime, models::QueryTimeDiapasonParams},
+    ApiContext, Error,
+};
 
 use super::models::{Repair, RepairList, RepairType};
 
 pub async fn get_all_repairs(
     _: AuthUser,
     State(ctx): State<ApiContext>,
+    Query(params): Query<QueryTimeDiapasonParams>,
 ) -> Result<Json<RepairList>, Error> {
+    let start_date = naive_date_to_utc_datetime(params.start_date);
+    let end_date = naive_date_to_utc_datetime(params.end_date);
+
     let db_repairs = query!(
         r#"
         SELECT
@@ -33,7 +45,11 @@ pub async fn get_all_repairs(
             building b ON r.building_id = b.id
         INNER JOIN
             address a ON b.address_id = a.id
-        "#
+        WHERE
+            r.started_at BETWEEN $1 AND $2
+        "#,
+        start_date,
+        end_date
     )
     .fetch_all(&ctx.db)
     .await?;
