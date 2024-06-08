@@ -22,18 +22,12 @@ import {
   TopBuildingsByRepairCosts
 } from '@/pages/building-statistics/components/top-buildings-by-repair-costs.tsx'
 import { ruDateFormat, ruMoneyFormat } from '@/types'
+import { formatDate } from '@/utils.ts'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import * as jsPDF from 'jspdf'
 import { ArrowUp, FireExtinguisherIcon } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 import { useReactToPrint } from 'react-to-print'
-
-function formatDate(date: Date) {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
 
 export default function Dashboard() {
   const queryClient = useQueryClient()
