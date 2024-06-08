@@ -15,7 +15,7 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate my-8 font-medium sm:max-w-72 md:max-w-[31rem]'>
         {row.getValue('buildingAddress')}
       </span>
         )
@@ -29,7 +29,7 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate py-8 font-medium sm:max-w-72 md:max-w-[31rem]'>
 						{row.getValue('incidentTypeName')}
 					</span>
         )
@@ -47,7 +47,7 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate py-8 font-medium sm:max-w-72 md:max-w-[31rem]'>
 						{ruDateFormat.format(new Date(row.getValue('reportedAt')))}
 					</span>
         )
@@ -62,7 +62,7 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate py-8 font-medium sm:max-w-72 md:max-w-[31rem]'>
 						{row.getValue('status')}
 					</span>
         )
@@ -80,7 +80,7 @@ const TableColumns = () => {
       cell: ({ row }) => {
         return (
           <span
-            className='max-w-32 truncate font-medium sm:max-w-72 md:max-w-[31rem]'>
+            className='max-w-32 truncate py-8 font-medium sm:max-w-72 md:max-w-[31rem]'>
 					{row.getValue('description')}
 				</span>
         )

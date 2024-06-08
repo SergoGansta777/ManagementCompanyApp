@@ -2,12 +2,15 @@ use axum::{
     extract::{Query, State},
     Json,
 };
-use chrono::{DateTime, TimeZone, Utc};
 
-use crate::api::{extractor::AuthUser, ApiContext, Error};
+use crate::api::{
+    extractor::AuthUser,
+    shared::{helpers::naive_date_to_utc_datetime, models::QueryTimeDiapasonParams},
+    ApiContext, Error,
+};
 
 use super::{
-    models::{QueryTimeDiapasonParams, SummaryStatistics, YearOverviewStatistics},
+    models::{SummaryStatistics, YearOverviewStatistics},
     utils::{build_statistics_for_building, build_year_overview_statistics},
 };
 
@@ -24,12 +27,11 @@ pub async fn get_building_statistics(
     ctx: State<ApiContext>,
     Query(params): Query<QueryTimeDiapasonParams>,
 ) -> Result<Json<SummaryStatistics>, Error> {
-    let start_date_time = params.start_date.and_hms(0, 0, 0);
-    let end_date_time = params.end_date.and_hms(0, 0, 0);
-
-    let start_date_utc: DateTime<Utc> = Utc.from_utc_datetime(&start_date_time);
-    let end_date_utc: DateTime<Utc> = Utc.from_utc_datetime(&end_date_time);
-
-    let report = build_statistics_for_building(&ctx.db, start_date_utc, end_date_utc).await?;
+    let report = build_statistics_for_building(
+        &ctx.db,
+        naive_date_to_utc_datetime(params.start_date),
+        naive_date_to_utc_datetime(params.end_date),
+    )
+    .await?;
     Ok(Json(report))
 }

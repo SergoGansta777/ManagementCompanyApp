@@ -26,6 +26,7 @@ mod extractor;
 mod financial_operation;
 mod incident;
 mod repair;
+mod shared;
 mod statistics;
 mod user;
 
