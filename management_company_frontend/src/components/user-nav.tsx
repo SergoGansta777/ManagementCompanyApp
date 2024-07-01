@@ -10,9 +10,10 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/context/authContext'
 import { useQuery } from '@tanstack/react-query'
+import { Navigate } from 'react-router-dom'
 
 export function UserNav() {
-  const { data: queryData, isLoading } = useQuery({
+  const { data: queryData, isLoading, isError } = useQuery({
     queryKey: ['user'],
     queryFn: GetCurrentUser
   })
@@ -20,6 +21,10 @@ export function UserNav() {
   
   if (isLoading) {
     return <div>Loading...</div>
+  }
+  
+  if (isError) {
+    return <Navigate to='/login' replace />
   }
   
   return (
