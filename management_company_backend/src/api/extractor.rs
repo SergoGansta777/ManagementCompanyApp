@@ -41,50 +41,66 @@ impl AuthUser {
     }
 
     fn from_authorization(ctx: &ApiContext, auth_header: &HeaderValue) -> Result<Self, Error> {
-        let auth_header = auth_header.to_str().map_err(|_| {
-            tracing::debug!("Authorization header is not UTF-8");
-            Error::Unauthorized
-        })?;
+        let jwt = get_token_from_header(auth_header)?;
 
-        if !auth_header.starts_with(SCHEME_PREFIX) {
-            tracing::debug!(
-                "Authorization header is using the wrong scheme: {:?}",
-                auth_header
-            );
-            return Err(Error::Unauthorized);
-        }
-
-        let token = &auth_header[SCHEME_PREFIX.len()..];
-
-        let jwt =
-            Token::<jwt::Header, AuthUserClaims, _>::parse_unverified(token).map_err(|e| {
-                tracing::debug!(
-                    "Failed to parse Authorization header {:?} : {}",
-                    auth_header,
-                    e
-                );
-                Error::Unauthorized
-            })?;
-
-        let hmac = Hmac::<Sha384>::new_from_slice(ctx.config.hmac_key.as_bytes())
-            .expect("HMAC-SHA-384 can accept any key length");
-
-        let jwt = jwt.verify_with_key(&hmac).map_err(|e| {
-            tracing::debug!("JWT failed to verify: {}", e);
-            Error::Unauthorized
-        })?;
-
-        let (_header, claims) = jwt.into();
-
-        if claims.exp < OffsetDateTime::now_utc().unix_timestamp() {
-            tracing::debug!("Token expired");
-            return Err(Error::Unauthorized);
-        }
+        let claims = get_claims(ctx, jwt)?;
 
         Ok(Self {
             user_id: claims.user_id,
         })
     }
+}
+
+fn get_claims(
+    ctx: &ApiContext,
+    jwt: Token<jwt::Header, AuthUserClaims, jwt::Unverified>,
+) -> Result<AuthUserClaims, Error> {
+    let hmac = Hmac::<Sha384>::new_from_slice(ctx.config.hmac_key.as_bytes())
+        .expect("HMAC-SHA-384 can accept any key length");
+
+    let jwt = jwt.verify_with_key(&hmac).map_err(|e| {
+        tracing::debug!("JWT failed to verify: {}", e);
+        Error::Unauthorized
+    })?;
+
+    let (_header, claims) = jwt.into();
+
+    if claims.exp < OffsetDateTime::now_utc().unix_timestamp() {
+        tracing::debug!("Token expired");
+        return Err(Error::Unauthorized);
+    }
+
+    Ok(claims)
+}
+
+fn get_token_from_header(
+    auth_header: &HeaderValue,
+) -> Result<Token<jwt::Header, AuthUserClaims, jwt::Unverified>, Error> {
+    let auth_header = auth_header.to_str().map_err(|_| {
+        tracing::debug!("Authorization header is not UTF-8");
+        Error::Unauthorized
+    })?;
+
+    if !auth_header.starts_with(SCHEME_PREFIX) {
+        tracing::debug!(
+            "Authorization header is using the wrong scheme: {:?}",
+            auth_header
+        );
+        return Err(Error::Unauthorized);
+    }
+
+    let token = &auth_header[SCHEME_PREFIX.len()..];
+
+    let jwt = Token::<jwt::Header, AuthUserClaims, _>::parse_unverified(token).map_err(|e| {
+        tracing::debug!(
+            "Failed to parse Authorization header {:?} : {}",
+            auth_header,
+            e
+        );
+        Error::Unauthorized
+    })?;
+
+    Ok(jwt)
 }
 
 impl MaybeAuthUser {}
